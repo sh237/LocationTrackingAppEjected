@@ -1,4 +1,4 @@
-import React , { Component,useState, useEffect,useRoute,useRef } from 'react';
+import React , { Component,useState, useEffect,useRoute,useRef, useInsertionEffect } from 'react';
 import { StyleSheet, Text, View ,Image, Button, Alert, Dimensions} from 'react-native';
 import MapView, { Marker, Polyline} from 'react-native-maps';
 import Geolocation from 'react-native-geolocation-service';
@@ -13,6 +13,7 @@ const MapDisplay = ({navigation,route}) => {
     // let [proba, setProba] = useState(0);
     let [latlngs, setLatlngs] = useState([]);
     let [photos, setPhotos] = useState({});
+    let [group, setGroup] = useState([]);
     var { width, height } = Dimensions.get('window');
     const ASPECT_RATIO = width / height;
     const LATITUDE_DELTA = 0.01;
@@ -64,7 +65,7 @@ const MapDisplay = ({navigation,route}) => {
         }
       };
     }, []);
-    let getPhotos = () => {
+  let getPhotos = () => {
 
     CameraRoll.getPhotos({
       first: 10,
@@ -74,13 +75,15 @@ const MapDisplay = ({navigation,route}) => {
       // afterTime: new Date(route.params.date).getDate(),
     })
     .then(r => {
-      setPhotos(r.edges)
+      setPhotos(r.edges.map((v,i)=>{ if(v.hasOwnProperty('location')&& v.node.location != null){ return v } }));
+      groupByDistance();
     })
     .catch((err) => {
        //Error Loading Images
        console.log("error");
     });
   };
+
   const onZoomInPress = () => {
     mapRef.current.getCamera().then((cam) => {
         cam.zoom += 1;
@@ -88,6 +91,22 @@ const MapDisplay = ({navigation,route}) => {
     });
 };
 
+  const groupByDistance = () => {
+    setGroup(prevGroup=>[...prevGroup,[photos[0]]]);//1番はじめの画像をgroupに追加
+    for (let i = 1; i < photos.length; i++) {
+      for(let j = 0; j < group.length; j++){
+        if (getDistance(photos[i].node.location.latitude,photos[i].node.location.longitude,group[j][0].node.location.latitude,group[j][0].node.location.longitude) < 0.0004){//photosのi番目がgroupのj番目に含まれていたら、
+          setGroup(group.map((v,index) => (index == j ? v.concat([photos[i]]): v)));
+        }else if(j+1 == group.length){
+          setGroup(prevGroup=>[...prevGroup, [photos[i]]]);
+        }
+      }
+    }
+  }
+
+  const getDistance = (lat1,lon1,lat2,lon2) =>{
+    return Math.sqrt( Math.pow( lat2-lat1, 2 ) + Math.pow( lon2-lon1, 2 ) ) ;
+  }
     
           return (
             <View style={{flex:1}}>
@@ -152,6 +171,7 @@ const MapDisplay = ({navigation,route}) => {
                 <Button onPress={() => {ZoomOut();}} title="ズームアウト" />
                 <Text>{latlngs.length}</Text>
                 <Button title="Move to Calendar" onPress={() => {navigation.navigate('Calendar');}}/>
+                <Button title="photosとgroupの確認" onPress={() => {console.log(photos);console.log(group);}}/>
                 <Text>{route.params.date}</Text>
                 <Text>{altitude}</Text>
                 

@@ -66,6 +66,7 @@ const MapDisplay = ({navigation,route}) => {
         }
       };
     }, []);
+
   let getPhotos = () => {
 
     CameraRoll.getPhotos({
@@ -77,8 +78,9 @@ const MapDisplay = ({navigation,route}) => {
     })
     .then(r => {
       console.log(r.edges.filter((v) => {return v.node.hasOwnProperty("location") && v.node.location != null && v != undefined}));
-      setPhotos(r.edges.filter((v) => {return v.node.hasOwnProperty("location") && v.node.location != null && v != undefined}));
-      groupByDistance();
+      let temp_photos = r.edges.filter((v) => {return v.node.hasOwnProperty("location") && v.node.location != null && v != undefined});
+      setPhotos(temp_photos);
+      groupByDistance(temp_photos);
       console.log("group"+group);
     })
     .catch((err) => {
@@ -94,29 +96,36 @@ const MapDisplay = ({navigation,route}) => {
     });
 };
 
-  const groupByDistance = () => {
-    let newGroup = [[photos[0]]];
+  const groupByDistance = (temp_photos) => {
+    let newGroup = [[temp_photos[0]]];
     // setGroup([[photos[0]]]);//1番はじめの画像をgroupに追加
-    for (let i = 1; i < photos.length; i++) {
+    for (let i = 1; i < temp_photos.length; i++) {
       let j = 0;
       while(j < newGroup.length){
-        console.log(i,j);
-        if (getDistance(photos[i].node.location.latitude,photos[i].node.location.longitude,newGroup[j][0].node.location.latitude,newGroup[j][0].node.location.longitude) < 0.0004){//photosのi番目がgroupのj番目に含まれていたら、
-          newGroup = newGroup.map((v,index) => (index == j ? v.concat([photos[i]]): v));
-          // setGroup(group.map((v,index) => (index == j ? v.concat([photos[i]]): v)));
+        // console.log("newGroup"+JSON.stringify(newGroup));
+        // console.log(i,j,newGroup.length);
+        if (getDistance(temp_photos[i].node.location.latitude,temp_photos[i].node.location.longitude,newGroup[j][0].node.location.latitude,newGroup[j][0].node.location.longitude) < 0.0004){//photosのi番目がgroupのj番目に含まれていたら、
+          newGroup = newGroup.map((v,index) => (index == j ? v.concat([[temp_photos[i]]]): v));
+          // setGroup(group.map((v,index) => (index == j ? v.concat([temp_photos[i]]): v)));
           break;
         }else if(j+1 == newGroup.length){
-          newGroup.concat([photos[i]]);
-          // setGroup(prevGroup=>[...prevGroup, [photos[i]]]);
+          newGroup = newGroup.concat([[temp_photos[i]]]);
+          break;
+          // setGroup(prevGroup=>[...prevGroup, [temp_photos[i]]]);
         }
-        j++
+        j++;
       }
     }
+    // console.log("newGroup"+JSON.stringify(newGroup));
     setGroup(newGroup);
-  }                                                                                 
+  }     
 
   const getDistance = (lat1,lon1,lat2,lon2) =>{
     return Math.sqrt( Math.pow( lat2-lat1, 2 ) + Math.pow( lon2-lon1, 2 ) ) ;
+  }
+
+  const selectedImagesShow = ()=>{
+    return;
   }
     
           return (
@@ -155,16 +164,18 @@ const MapDisplay = ({navigation,route}) => {
                 })} */}
 
 
-                  {/* {group.length > 0 && group.map((g, i) => {
+                  {(group.length > 0 && group[0][0] != undefined) && group.map((g, i) => {
+                    // console.log("groupp"+group);
+                    // console.log("length"+group.length)
                   return (
                     <React.Fragment key={i}>
-                      <Marker title={g[0].length} coordinate={{latitude:g[0].node.location.latitude, longitude:g[0].node.location.longitude}} >
+                      <Marker title={g.length.toString()} description={g.length.toString()}coordinate={{latitude:g[0].node.location.latitude, longitude:g[0].node.location.longitude}} onPress={selectedImagesShow()}>
                       <Image  style={{ width: 50, height: 50, }} resizeMode="contain"
                       source={{ uri: g[0].node.image.uri }}/>
                       </Marker>
                       </React.Fragment>
                     );
-                })} */}
+                })}
 
                     <Marker 
                     coordinate={markers.latlng} 
@@ -192,9 +203,10 @@ const MapDisplay = ({navigation,route}) => {
                 <Button onPress={() => {mapRef.current.animateToRegion(markers.latlng, 1 * 1000);}} title="現在地へ" />
                 <Button onPress={() => {ZoomIn();}} title="ズームイン" />
                 <Button onPress={() => {ZoomOut();}} title="ズームアウト" />
-                <Text>{latlngs.length}</Text>
+                {/* <Text>{latlngs.length}</Text> */}
                 <Button title="Move to Calendar" onPress={() => {navigation.navigate('Calendar');}}/>
                 <Button title="photosとgroupの確認" onPress={() => {console.log("photos"+photos);console.log("group"+group);}}/>
+                <Button title="groupByDistance" onPress={() => {groupByDistance();}}/>
                 <Text>{route.params.date}</Text>
                 <Text>{altitude}</Text>
                 

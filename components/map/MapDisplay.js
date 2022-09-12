@@ -1,5 +1,5 @@
 import React , { Component,useState, useEffect,useRoute,useRef, useInsertionEffect } from 'react';
-import { StyleSheet, Text, View ,Image, Button, Alert, Dimensions} from 'react-native';
+import { StyleSheet, Text, View ,Image, Button, Alert, Dimensions, Modal} from 'react-native';
 import MapView, { Marker, Polyline} from 'react-native-maps';
 import Geolocation from 'react-native-geolocation-service';
 import {decode} from "@mapbox/polyline";
@@ -14,12 +14,20 @@ const MapDisplay = ({navigation,route}) => {
     let [latlngs, setLatlngs] = useState([]);
     let [photos, setPhotos] = useState({});
     let [group, setGroup] = useState([]);
+    let [imgmodal, setImgModal] = useState(false);
+    let [selectedimg, setSelectedImg] = useState([]);
+
     var { width, height } = Dimensions.get('window');
     const ASPECT_RATIO = width / height;
     const LATITUDE_DELTA = 0.01;
     const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
     const [altitude, setAltitude] = useState(0); //initiates variable zoom
-
+    const openModal = ()=> {
+      setImgModal(true);
+    }
+    const closeModal = ()=> {
+      setImgModal(false);
+    }
     const ZoomIn = async () => {
       const coords = await mapRef.current.getCamera().then((cam)=> {cam.altitude-=10000; mapRef.current.animateCamera(cam,{duration:200}); setAltitude(cam.altitude); });
       // setZoom(coords.center.zoom); // sets variable zoom the value under coords.center.zoom
@@ -124,9 +132,10 @@ const MapDisplay = ({navigation,route}) => {
     return Math.sqrt( Math.pow( lat2-lat1, 2 ) + Math.pow( lon2-lon1, 2 ) ) ;
   }
 
-  const selectedImagesShow = ()=>{
+  const selectedImagesShow = (images)=>{
     return;
   }
+
     
           return (
             <View style={{flex:1}}>
@@ -169,7 +178,7 @@ const MapDisplay = ({navigation,route}) => {
                     // console.log("length"+group.length)
                   return (
                     <React.Fragment key={i}>
-                      <Marker title={g.length.toString()} description={g.length.toString()}coordinate={{latitude:g[0].node.location.latitude, longitude:g[0].node.location.longitude}} onPress={selectedImagesShow()}>
+                      <Marker title={g.length.toString()} description={g.length.toString()}coordinate={{latitude:g[0].node.location.latitude, longitude:g[0].node.location.longitude}} onPress={selectedImagesShow(g)}>
                       <Image  style={{ width: 50, height: 50, }} resizeMode="contain"
                       source={{ uri: g[0].node.image.uri }}/>
                       </Marker>
@@ -196,7 +205,7 @@ const MapDisplay = ({navigation,route}) => {
                     {/* {markers.image && <Image source={{ uri: markers.image }} style={{ width: 100, height: 100 }} />} */}
                   </Marker>
                   {latlngs.length > 0 && <Polyline coordinates={latlngs} strokeColor="#000" strokeWidth={3} />}
-
+                
               </MapView>
               <View style={{position : 'absolute', right : '0%'}}>
               <Text>{photos.length}</Text>

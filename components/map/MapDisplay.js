@@ -76,13 +76,18 @@ const MapDisplay = ({navigation,route}) => {
     }, []);
 
   let getPhotos = () => {
-
+    let from = new Date(route.params.date);
+    let to = new Date(route.params.date);
+    from.setHours(from.getHours()-9);
+    to.setHours(to.getHours()+15);
+    console.log("from"+from.toLocaleString())
+    console.log("to"+to.toLocaleString())
     CameraRoll.getPhotos({
       first: 10,
       assetType: 'Photos',
       groupTypes : 'All',
-      // fromTime:  new Date(route.params.date).getDate()-1,
-      // afterTime: new Date(route.params.date).getDate(),
+      fromTime:  from.valueOf(),
+      toTime: to.valueOf(),     
     })
     .then(r => {
       console.log(r.edges.filter((v) => {return v.node.hasOwnProperty("location") && v.node.location != null && v != undefined}));
@@ -190,6 +195,8 @@ const MapDisplay = ({navigation,route}) => {
                   {(group.length > 0 && group[0][0] != undefined) && group.map((g, i) => {
                     // console.log("groupp"+group);
                     // console.log("length"+group.length)
+                    console.log("date"+new Date(g[0].node.timestamp*1000).toLocaleString());
+                    console.log("date"+g[0].node.timestamp*1000);
                   return (
                     <React.Fragment key={i}>
                       <Marker title={g.length.toString()} description={g.length.toString()}coordinate={{latitude:g[0].node.location.latitude, longitude:g[0].node.location.longitude}} onPress={()=>{navigation.navigate('MapModal',{images:g})}}>

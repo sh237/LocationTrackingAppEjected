@@ -171,6 +171,20 @@ const MapDisplay = ({navigation,route}) => {
                       </React.Fragment>
                     );
                 })} */}
+                {/* <Modal
+                visible={imgmodal}
+                animationType={'slide'}
+                onRequestClose={() => this.closeModal()}
+                transparent
+                >
+                  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: "#fff" }}>
+                    <Button
+                      onPress={() => this.closeModal()}
+                      title="Close modal"
+                    >
+                    </Button>
+                  </View>
+                </Modal> */}
 
 
                   {(group.length > 0 && group[0][0] != undefined) && group.map((g, i) => {
@@ -178,8 +192,8 @@ const MapDisplay = ({navigation,route}) => {
                     // console.log("length"+group.length)
                   return (
                     <React.Fragment key={i}>
-                      <Marker title={g.length.toString()} description={g.length.toString()}coordinate={{latitude:g[0].node.location.latitude, longitude:g[0].node.location.longitude}} onPress={selectedImagesShow(g)}>
-                      <Image  style={{ width: 50, height: 50, }} resizeMode="contain"
+                      <Marker title={g.length.toString()} description={g.length.toString()}coordinate={{latitude:g[0].node.location.latitude, longitude:g[0].node.location.longitude}} onPress={()=>{navigation.navigate('MapModal',{images:g})}}>
+                      <Image  style={{ width: 50, height: 50, }} resizeMode="contain" 
                       source={{ uri: g[0].node.image.uri }}/>
                       </Marker>
                       </React.Fragment>
@@ -215,9 +229,11 @@ const MapDisplay = ({navigation,route}) => {
                 {/* <Text>{latlngs.length}</Text> */}
                 <Button title="Move to Calendar" onPress={() => {navigation.navigate('Calendar');}}/>
                 <Button title="photosとgroupの確認" onPress={() => {console.log("photos"+photos);console.log("group"+group);}}/>
-                <Button title="groupByDistance" onPress={() => {groupByDistance();}}/>
+                <Button title="openModal" onPress={() => {openModal();}}/>
+                {selectedimg.length > 0 && <Button title="MapModal" onPress={() => {navigation.navigate('MapModal',selectedimg)}}/>}
                 <Text>{route.params.date}</Text>
                 <Text>{altitude}</Text>
+
                 
               </View>
             </View>

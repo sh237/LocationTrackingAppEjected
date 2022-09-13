@@ -49,6 +49,7 @@ const CalendarDisplay = ({navigation}) => {
             navigation.navigate('Tracking');
         }}
         />
+        
   </View>
 );
 };

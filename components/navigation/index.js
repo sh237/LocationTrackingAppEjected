@@ -15,6 +15,9 @@ const RootStackScreen = () => {
         <RootStack.Screen name="Calendar" component={CalendarDisplay} />
         <RootStack.Screen name="Map" component={MapDisplay} />
         <RootStack.Screen name="Tracking" component={WatchLocation} />
+        <RootStack.Screen name="Login" component={Login} />
+        <RootStack.Screen name="Register" component={Register} />
+        <RootStack.Screen name="Home" component={Home} />
 
         <RootStack.Group
         screenOptions={{

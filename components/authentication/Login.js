@@ -3,10 +3,10 @@ import { View, Text } from 'react-native';
 import LoginOrCreateForm from './common/LoginOrCreateForm';
 
 
-const Login = () => {  
+const Login = ({navigation}) => {  
     return (
       <View style={{ flex: 1 }}>
-        <LoginOrCreateForm />
+        <LoginOrCreateForm navigation={navigation}/>
       </View>
     );
 }

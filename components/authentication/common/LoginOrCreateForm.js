@@ -1,11 +1,10 @@
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 import { Button, View, Text, TextInput, StyleSheet } from 'react-native';
-import { Actions } from 'react-native-router-flux';
 import axios from 'axios';
 
 
-const LoginOrCreateForm = () => {
-    const [user, setUser] = userState({
+const LoginOrCreateForm = (props) => {
+    const [user, setUser] = useState({
         username: '',
         password: '',
         email: '',
@@ -18,34 +17,34 @@ const LoginOrCreateForm = () => {
 //   }
 
   const onUsernameChange = (text)=>{ 
-    setUser({ username: text });
+    setUser(user => ({...user, username: text }));
   };
 
   const onPasswordChange = (text) => {
-    setUser({ password: text });
+    setUser(user => ({...user, password: text }));
   }
 
   const onEmailChange = (text)=> {
-    setUser({ email: text });
+    setUser(user => ({...user, email: text }));
   }
   const handleRequest = () => {
-    const endpoint = this.props.create ? 'register' : 'login';
-    const payload = { username: user.username, password: user.password } 
-    
-    if (this.props.create) {
-      payload.email = user.email;
+    const endpoint = props.create ? 'register' : 'login';
+    let payload;
+    if (props.create) {
+      payload = { username: user.username, password: user.password , email: user.email}
+    }else{
+      payload = { username: user.email, password: user.password }
     }
-    
+    console.log(payload);
     axios
-      .post(`/auth/${endpoint}/`, payload)
+      .post(`/auth/${endpoint}`, payload)
       .then(response => {
         const { token, user_ } = response.data;
-  
         // We set the returned token as the default authorization header
         axios.defaults.headers.common.Authorization = `Token ${token}`;
-        
         // Navigate to the home screen
-        Actions.main();
+        props.navigation.navigate('Map', {date:new Date().toLocaleString()});
+        // Actions.main();
       })
       .catch(error => console.log(error));
   }
@@ -53,13 +52,13 @@ const LoginOrCreateForm = () => {
 
   const renderCreateForm = () => {
     const { fieldStyle, textInputStyle } = style;
-    if (this.props.create) {
+    if (props.create) {
       return (
           <View style={fieldStyle}>
             <TextInput
-              placeholder="First name"
+              placeholder="username"
               autoCorrect={false}
-              onChangeText={onEmailChange.bind(this)}
+              onChangeText={(text)=>{onUsernameChange(text)}}
               style={textInputStyle}
             />
           </View>
@@ -68,21 +67,22 @@ const LoginOrCreateForm = () => {
   }
 
   const renderButton=()=> {
-    const buttonText = this.props.create ? 'Create' : 'Login';
+    const buttonText = props.create ? 'Create' : 'Login';
 
     return (
-      <Button title={buttonText} onPress={handleRequest.bind(this)}/>
+      <Button title={buttonText} onPress={()=>{handleRequest()}}/>
     );
   }
 
 
   const renderCreateLink= ()=> {
-    if (!this.props.create) {
+    if (!props.create) {
       const { accountCreateTextStyle } = style;
       return (
         <Text style={accountCreateTextStyle}>
           Or 
-          <Text style={{ color: 'blue' }} onPress={() => Actions.register()}>
+          {/* <Text style={{ color: 'blue' }} onPress={() => Actions.register()}> */}
+          <Text style={{ color: 'blue' }} onPress={() => props.navigation.navigate("Register")}>
             {' Sign-up'}
           </Text>
         </Text>
@@ -103,10 +103,10 @@ const LoginOrCreateForm = () => {
         <View style={formContainerStyle}>
           <View style={fieldStyle}>
             <TextInput
-              placeholder="username"
+              placeholder="email"
               autoCorrect={false}
               autoCapitalize="none"
-              onChangeText={onUsernameChange.bind(this)}
+              onChangeText={(text)=>{onEmailChange(text)}}
               style={textInputStyle}
             />
           </View>
@@ -116,7 +116,7 @@ const LoginOrCreateForm = () => {
               autoCapitalize="none"
               autoCorrect={false}
               placeholder="password"
-              onChangeText={onPasswordChange.bind(this)}
+              onChangeText={(text)=>{onPasswordChange(text)}}
               style={textInputStyle}
             />
           </View>

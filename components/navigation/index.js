@@ -5,6 +5,9 @@ import MapDisplay from '../map/MapDisplay';
 import CalendarDisplay from '../calendar/CalendarDisplay';
 import WatchLocation from '../tracking/TrackingDisplay'
 import MapModal from '../modal/MapModal';
+import Login from '../authentication/Login';
+import Register from '../authentication/Register';
+import Home from '../authentication/Home';
 
 const RootStack = createStackNavigator();
 

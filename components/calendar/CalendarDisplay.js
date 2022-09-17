@@ -49,6 +49,24 @@ const CalendarDisplay = ({navigation}) => {
             navigation.navigate('Tracking');
         }}
         />
+        <Button
+        title="Log In画面に遷移する"
+        onPress={() => {
+            navigation.navigate('Login');
+        }}
+        />
+        <Button
+        title="Home画面に遷移する"
+        onPress={() => {
+            navigation.navigate('Home');
+        }}
+        />
+        <Button
+        title="Sign up画面に遷移する"
+        onPress={() => {
+            navigation.navigate('Register');
+        }}
+        />
         
   </View>
 );

@@ -1,26 +1,27 @@
 import React, { Component } from 'react';
 import { View, Button, StyleSheet } from 'react-native';
-import { Actions } from 'react-native-router-flux';
 import axios from 'axios';
 
 
-const Home = () => {
+const Home = (props) => {
 
   const handleRequest = () => {
     // This request will only succeed if the Authorization header
     // contains the API token
     axios
-      .get('/auth/logout/')
+      .get('/auth/logout')
       .then(response => {
-        Actions.auth()
+        props.navigation.navigate('Login');
+        // Actions.auth()
+
       })
-      .catch(error =>  console.log(error));
+      .catch(error =>  {console.log(error);console.log(axios.defaults.headers.common.Authorization);});
   }
 
     const { buttonContainerStyle } = styles;
     return (
       <View style={buttonContainerStyle}>
-        <Button title="Logout" onPress={handleRequest.bind(this)}/>
+        <Button title="Logout" onPress={()=>{handleRequest()}}/>
       </View>
     );
   }

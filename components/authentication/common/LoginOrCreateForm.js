@@ -36,17 +36,25 @@ const LoginOrCreateForm = (props) => {
       payload = { username: user.email, password: user.password }
     }
     console.log(payload);
+    
     axios
       .post(`/auth/${endpoint}`, payload)
       .then(response => {
-        const { token, user_ } = response.data;
+        const { token } = response.data;
+        console.log(response.data);
         // We set the returned token as the default authorization header
         axios.defaults.headers.common.Authorization = `Token ${token}`;
         // Navigate to the home screen
-        props.navigation.navigate('Map', {date:new Date().toLocaleString()});
         // Actions.main();
+        axios.get('/auth/myself').then(response => {
+          const {id, email} = response.data;
+          props.navigation.navigate('Calendar', { user: id, email: email});
+        }).catch(error => console.log(error));
+        
       })
       .catch(error => console.log(error));
+      
+    
   }
 
 

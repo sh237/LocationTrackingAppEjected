@@ -4,7 +4,8 @@ import { Calendar,LocaleConfig } from 'react-native-calendars';
 import moment from "moment";
 
 const INITIAL_DATE = moment().format("YYYY-MM-DD");
-const CalendarDisplay = ({navigation}) => {
+
+const CalendarDisplay = ({navigation, route}) => {
     LocaleConfig.locales.jp = {
         monthNames: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
         monthNamesShort: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
@@ -16,10 +17,9 @@ const CalendarDisplay = ({navigation}) => {
     const handleDayPress = (day) => {
         setSelected(day.dateString);
         console.log(new Date(day.dateString).toLocaleString());
-        navigation.navigate("Map",{date:new Date(day.dateString).toLocaleString()});
-        
+        navigation.navigate("Map",{date:new Date(day.dateString).toISOString().split('T')[0],user:route.params.user,email:route.params.email});
         }
-    
+        
     return(
     <View style={styles.container}>
         <Calendar
@@ -38,18 +38,6 @@ const CalendarDisplay = ({navigation}) => {
         {/* <View/> */}
         <Text>DetailScreen</Text>
         <Button
-        title="Map画面に遷移する"
-        onPress={() => {
-            navigation.navigate('Map',{date:new Date().toLocaleString()});
-        }}
-        />
-        <Button
-        title="Tracking画面に遷移する"
-        onPress={() => {
-            navigation.navigate('Tracking');
-        }}
-        />
-        <Button
         title="Log In画面に遷移する"
         onPress={() => {
             navigation.navigate('Login');
@@ -67,11 +55,9 @@ const CalendarDisplay = ({navigation}) => {
             navigation.navigate('Register');
         }}
         />
-        
   </View>
 );
 };
-
 
 const styles = StyleSheet.create({
 container: {
@@ -80,6 +66,5 @@ container: {
   alignItems: 'center',
 },
 });
-
 
 export default CalendarDisplay

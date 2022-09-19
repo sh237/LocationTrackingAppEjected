@@ -4,10 +4,10 @@ import MapView, { Marker, Polyline} from 'react-native-maps';
 import Geolocation from 'react-native-geolocation-service';
 import {decode} from "@mapbox/polyline";
 import {CameraRoll }from '@react-native-camera-roll/camera-roll';
-import axios from 'axios';
+import BackgroundGeolocation from "react-native-background-geolocation";
 // import Exif from 'react-native-exif';
 
-const MapDisplay = ({navigation,route}) => {
+const TodayMapDisplay = ({navigation,route}) => {
     const mapRef = useRef(null);
     // let [image, setImage] = useState('');
     let [markers, setMarkers] = useState({});
@@ -18,7 +18,7 @@ const MapDisplay = ({navigation,route}) => {
     let [imgmodal, setImgModal] = useState(false);
     let [selectedimg, setSelectedImg] = useState([]);
     let [isfirst, setIsFirst] = useState(true);
-    let [calendarid, setCalendarId] = useState(null);
+    let [calendarid, setCalendarId] = useState(0);
 
     var { width, height } = Dimensions.get('window');
     const ASPECT_RATIO = width / height;
@@ -42,31 +42,44 @@ const MapDisplay = ({navigation,route}) => {
 
     useEffect(() => {
       getPhotos();
-      if(route.params.date == new Date().toISOString().split('T')[0]){
-        navigation.navigate("TodayMap",{user: route.params.user, date: route.params.date});
-      }
-      console.log("user:"+route.params.user+"date:"+route.params.date);
 
       axios
       .get(`/api/calendar/${route.params.user}/?search=${route.params.date}`)
       .then(response => {
         const {id} = response.data;
-        if(id){
+        if(!id){
+          const payload = { user: route.params.user, date: route.params.date};
+          axios.post(`/api/calendar/`,payload).then(response => {
+            const {id_} = response.data;
+            console.log("created calendar"+route.params.date);
+            setCalendarId(id_);
+            console.log(id_);
+          }
+          ).catch(error => console.log(error));
+        }else{
           setCalendarId(id);
-          console.log("calendar_id"+id);
-          axios.get(`/api/location/${id}/`).then(response_ => {
-            console.log(response_.data);
-            const {geometry} = response_.data;
-            const {coordinates} = geometry;
-            coordinates.map((v,i)=>{
-              setLatlngs(latlngs => [...latlngs, {latitude: v[1], longitude: v[0]}]);
-            })}).catch(error => {console.log(error);console.log("inner error");});
+          console.log(id);
         }
       })
-      .catch(error => {console.log(error); console.log("outer error");setLatlngs([{latitude: 35.249245, longitude: 139.686818}]);});
+      .catch(error => console.log(error));
+
+      BackgroundGeolocation.watchPosition((location) => {
+        console.log("[watchPosition] -", location);
+      }, (errorCode) => {
+        console.log("[watchPosition] ERROR -", errorCode);
+      }, {
+        interval: 1000,
+        desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
+        persist: true,
+        extras: {foo: "bar"},
+        timeout: 60000
+      });
+
+
       
-  
     }, []);
+  
+  
 
   let getPhotos = () => {
     let from = new Date(route.params.date);
@@ -129,6 +142,11 @@ const MapDisplay = ({navigation,route}) => {
   const getDistance = (lat1,lon1,lat2,lon2) =>{
     return Math.sqrt( Math.pow( lat2-lat1, 2 ) + Math.pow( lon2-lon1, 2 ) ) ;
   }
+
+  const selectedImagesShow = (images)=>{
+    return;
+  }
+
     
           return (
             <View style={{flex:1}}>
@@ -138,8 +156,6 @@ const MapDisplay = ({navigation,route}) => {
                   initialRegion={{
                       latitude: 35.249245,
                       longitude: 139.686818,
-                      // latitude: latlngs[0].latitude,
-                      // longitude: latlngs[0].longitude,
                       // latitude: markers.latlng.latitude,
                       // longitude: markers.latlng.longitude,
                       latitudeDelta: 0.02, //小さくなるほどズーム
@@ -149,6 +165,38 @@ const MapDisplay = ({navigation,route}) => {
                 onRegionChangeComplete={region => {mapRef.current.getCamera().then((cam)=> {setAltitude(cam.altitude); }); }}
                 // onPanDrag={()=> {mapRef.current.getCamera().then((cam)=> {setAltitude(cam.altitude); }); }}
               >
+
+                  {/* {photos.length > 0 && photos.map((p, i) => {
+                  return (
+                    <React.Fragment key={i}>
+                    {(p.node.hasOwnProperty('location')&& p.node.location != null) ? (
+                      <Marker title={new Date(p.node.timestamp*1000).toLocaleString()}coordinate={{latitude:p.node.location.latitude, longitude:p.node.location.longitude}} >
+                      <Image  style={{ width: 50, height: 50, }} resizeMode="contain"
+                      source={{ uri: p.node.image.uri }}/>
+                      </Marker>) 
+                    : (
+                      <Marker coordinate={markers.latlng} >
+                      <Image  style={{ width: 50, height: 50, }} resizeMode="contain"
+                        source={{ uri: p.node.image.uri }} />
+                      </Marker>)}
+                      </React.Fragment>
+                    );
+                })} */}
+                {/* <Modal
+                visible={imgmodal}
+                animationType={'slide'}
+                onRequestClose={() => this.closeModal()}
+                transparent
+                >
+                  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: "#fff" }}>
+                    <Button
+                      onPress={() => this.closeModal()}
+                      title="Close modal"
+                    >
+                    </Button>
+                  </View>
+                </Modal> */}
+
 
                   {(group.length > 0 && group[0][0] != undefined) && group.map((g, i) => {
                     // console.log("groupp"+group);
@@ -193,11 +241,12 @@ const MapDisplay = ({navigation,route}) => {
                 <Button onPress={() => {ZoomOut();}} title="ズームアウト" />
                 {/* <Text>{latlngs.length}</Text> */}
                 <Button title="Move to Calendar" onPress={() => {navigation.navigate('Calendar');}}/>
-                <Button title="latlngsの確認" onPress={() => {console.log("latlngs"+JSON.stringify(latlngs));}}/>
+                <Button title="photosとgroupの確認" onPress={() => {console.log("photos"+photos);console.log("group"+group);}}/>
                 <Button title="openModal" onPress={() => {openModal();}}/>
                 {selectedimg.length > 0 && <Button title="MapModal" onPress={() => {navigation.navigate('MapModal',selectedimg)}}/>}
                 <Text>{route.params.date}</Text>
                 <Text>{altitude}</Text>
+
                 
               </View>
             </View>
@@ -206,4 +255,4 @@ const MapDisplay = ({navigation,route}) => {
 }
 
 
-export default MapDisplay
+export default TodayMapDisplay

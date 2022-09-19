@@ -2,6 +2,7 @@ import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
 import MapDisplay from '../map/MapDisplay';
+import TodayMapDisplay from '../map/TodayMapDisplay';
 import CalendarDisplay from '../calendar/CalendarDisplay';
 import WatchLocation from '../tracking/TrackingDisplay'
 import MapModal from '../modal/MapModal';
@@ -15,10 +16,11 @@ const RootStackScreen = () => {
   return (
     <NavigationContainer>
       <RootStack.Navigator>
+        <RootStack.Screen name="Login" component={Login} />
         <RootStack.Screen name="Calendar" component={CalendarDisplay} />
         <RootStack.Screen name="Map" component={MapDisplay} />
+        <RootStack.Screen name="TodayMap" component={TodayMapDisplay} />
         <RootStack.Screen name="Tracking" component={WatchLocation} />
-        <RootStack.Screen name="Login" component={Login} />
         <RootStack.Screen name="Register" component={Register} />
         <RootStack.Screen name="Home" component={Home} />
 

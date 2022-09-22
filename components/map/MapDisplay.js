@@ -42,7 +42,11 @@ const MapDisplay = ({navigation,route}) => {
 
     useEffect(() => {
       getPhotos();
-      if(route.params.date == new Date().toISOString().split('T')[0]){
+      const nowLocal = new Date()  
+      const diff = nowLocal.getTimezoneOffset() * 60 * 1000
+      const plusLocal = new Date(nowLocal - diff) 
+      if(route.params.date == plusLocal.toISOString().split('T')[0]){
+        console.log("navigation"+navigation.getParent())
         navigation.navigate("TodayMap",{user: route.params.user, date: route.params.date});
       }
       console.log("user:"+route.params.user+"date:"+route.params.date);

@@ -22,17 +22,19 @@ const CalendarDisplay = ({navigation, route}) => {
         
     return(
     <View style={styles.container}>
+      {console.log(navigation)}
         <Calendar
         monthFormat={"yyyy年 MM月"}
         current={INITIAL_DATE}
         markedDates={{
           [selected]: {
             selected: true,
-            disableTouchEvent: true,
+            disableTouchEvent: false,
             selectedColor: 'red',
             selectedTextColor: 'white'
           }
-        }}
+         }}
+        style={styles.calendar}
         onDayPress={handleDayPress}
       />
         {/* <View/> */}
@@ -61,9 +63,18 @@ const CalendarDisplay = ({navigation, route}) => {
 
 const styles = StyleSheet.create({
 container: {
+  
   flex: 1,
   justifyContent: 'center',
   alignItems: 'center',
+  
+},
+calendar: {
+  width: 380,
+  height: 364,
+  borderWidth: 1,
+  borderColor: 'gray',
+  borderRadius: 10,
 },
 });
 

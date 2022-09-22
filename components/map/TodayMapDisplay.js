@@ -1,10 +1,12 @@
 import React , { Component,useState, useEffect,useRoute,useRef, useInsertionEffect } from 'react';
 import { StyleSheet, Text, View ,Image, Button, Alert, Dimensions, Modal} from 'react-native';
 import MapView, { Marker, Polyline} from 'react-native-maps';
-import Geolocation from 'react-native-geolocation-service';
-import {decode} from "@mapbox/polyline";
 import {CameraRoll }from '@react-native-camera-roll/camera-roll';
 import BackgroundGeolocation from "react-native-background-geolocation";
+import Geolocation from 'react-native-geolocation-service';
+
+
+import axios from 'axios';
 // import Exif from 'react-native-exif';
 
 const TodayMapDisplay = ({navigation,route}) => {
@@ -17,7 +19,6 @@ const TodayMapDisplay = ({navigation,route}) => {
     let [group, setGroup] = useState([]);
     let [imgmodal, setImgModal] = useState(false);
     let [selectedimg, setSelectedImg] = useState([]);
-    let [isfirst, setIsFirst] = useState(true);
     let [calendarid, setCalendarId] = useState(0);
 
     var { width, height } = Dimensions.get('window');
@@ -42,45 +43,143 @@ const TodayMapDisplay = ({navigation,route}) => {
 
     useEffect(() => {
       getPhotos();
-
+      console.log(`/api/calendar/${route.params.user}/?search=${route.params.date}`);
       axios
       .get(`/api/calendar/${route.params.user}/?search=${route.params.date}`)
       .then(response => {
+        console.log("id___"+response.data.id);
         const {id} = response.data;
-        if(!id){
-          const payload = { user: route.params.user, date: route.params.date};
-          axios.post(`/api/calendar/`,payload).then(response => {
-            const {id_} = response.data;
-            console.log("created calendar"+route.params.date);
-            setCalendarId(id_);
-            console.log(id_);
-          }
-          ).catch(error => console.log(error));
-        }else{
-          setCalendarId(id);
-          console.log(id);
-        }
+        setCalendarId(id);
       })
-      .catch(error => console.log(error));
-
-      BackgroundGeolocation.watchPosition((location) => {
-        console.log("[watchPosition] -", location);
-      }, (errorCode) => {
-        console.log("[watchPosition] ERROR -", errorCode);
-      }, {
-        interval: 1000,
-        desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
-        persist: true,
-        extras: {foo: "bar"},
-        timeout: 60000
+      .catch(error => {
+        const payload = { user: route.params.user, date: route.params.date};
+        // console.log(payload);
+          axios.post(`/api/calendar/`,payload).then(response => {
+            const {id} = response.data;
+            // console.log("created calendar"+route.params.date);
+            setCalendarId(id);
+            console.log(id);
+          }
+          ).catch(error => console.log("inner:::"+error));
       });
-
-
       
-    }, []);
-  
-  
 
+
+      // BackgroundGeolocation.onLocation(onLocation, onError);
+      // BackgroundGeolocation.ready({
+      //   distanceFilter: 10,
+      //   stopOnTerminate: false,
+      //   startOnBoot: true, 
+      //   logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
+      //   debug: true,
+      // }, (state) => {
+      //   console.log("- BackgroundGeolocation is ready: ", state);
+
+      //   if (!state.enabled) {
+      //     BackgroundGeolocation.start(function() {
+      //       console.log("- Start success");
+      //     });
+      // }});
+
+      // BackgroundGeolocation.getCurrentPosition({
+      //   samples: 1,
+      //   persist: true
+      // }).then((location) => {
+      //   setMarkers(marker=>({...marker,latlng:{"latitude":location.coords.latitude,"longitude":location.coords.longitude}})); 
+      //   const payload = { calendar: tempid, mpoint:"MULTIPOINT ("+location.coords.longitude+" "+location.coords.latitude+")"};
+      //   axios.post(`/api/location/`,payload).then(response => {
+      //     console.log("updated location");
+      //   }).catch(error => console.log("post error:::"+error));
+      // });
+    }, []);
+
+    useEffect(() => {
+      console.log("useEffect"+calendarid);
+      Geolocation.getCurrentPosition(
+        position => {
+          const {latitude, longitude} = position.coords;
+          setMarkers(marker=>({...marker,latlng:{"latitude":latitude,"longitude":longitude}})); 
+          const payload = { calendar: calendarid, mpoint:"MULTIPOINT ("+longitude+" "+latitude+")"};
+          axios.post(`/api/location/`,payload).then(response => {
+            console.log("updated location");
+          }).catch(error => console.log("post error:::"+error));
+        },
+        error => {
+          console.log(error.code, error.message);
+        },
+        {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
+      );
+      BackgroundGeolocation.onLocation(onLocation, onError);
+      BackgroundGeolocation.ready({
+        distanceFilter: 500,
+        stopOnTerminate: false,
+        startOnBoot: true, 
+        logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
+        debug: true,
+        locationUpdateInterval:60000,
+      }, (state) => {
+        console.log("- BackgroundGeolocation is ready: ", state);
+
+        if (!state.enabled) {
+          BackgroundGeolocation.start(function() {
+            console.log("- Start success");
+          });
+      }});
+      
+      if(calendarid!=0){
+        axios.get(`/api/location/${calendarid}/`).then(response_ => {
+          const {geometry} = response_.data;
+          console.log("latlngs set");
+          const {coordinates} = geometry;
+          coordinates.map((v,i)=>{
+            setLatlngs(latlngs => [...latlngs, {latitude: v[1], longitude: v[0]}]);
+          })}).catch(error => {console.log(error);console.log("inner error");});
+        }
+    }, [calendarid]);
+
+    useEffect(() => {
+      // console.log("mapref")
+      // console.log(mapRef.current);
+      if( markers.latlng != null){
+        mapRef.current.animateToRegion(markers.latlng, 1 * 1000);
+      }
+    }, [markers.latlng, mapRef]);
+
+
+    onLocation = (location) => {
+      // console.log("latlngs"+latlngs);
+      setMarkers(marker=>({...marker,latlng:{"latitude":location.coords.latitude,"longitude":location.coords.longitude}})); 
+      setLatlngs(latlngs => [...latlngs, {latitude: location.coords.latitude, longitude: location.coords.longitude}]);
+      if(calendarid!=0){
+        const payload = { calendar: calendarid, mpoint:"MULTIPOINT ("+location.coords.longitude+" "+location.coords.latitude+")"};
+        axios.put(`/api/location/update/${calendarid}`,payload).then(response => {
+          console.log("updated location");
+        }).catch(error => console.log("post error:::"+error));
+      }
+      if(mapRef != null && markers.latlng != null){
+      mapRef.current.animateToRegion(markers.latlng, 1 * 1000);
+      // loadLatLngs();
+      }
+      }
+    
+
+    onError = (error) => {
+      console.warn('[location] ERROR -', error);
+    }
+    const loadLatLngs = () => {
+      if(calendarid!=0){
+      axios.get(`/api/location/${calendarid}`).then(response => {
+        const {geometry} = response_.data;
+          console,log("latlngs set");
+            const {coordinates} = geometry;
+            coordinates.map((v,i)=>{
+              setLatlngs(latlngs => [...latlngs, {latitude: v[1], longitude: v[0]}]);
+            })}).catch(error => {console.log(error);console.log("inner error");});
+      }
+    }
+  
+  
+  
   let getPhotos = () => {
     let from = new Date(route.params.date);
     let to = new Date(route.params.date);
@@ -146,6 +245,9 @@ const TodayMapDisplay = ({navigation,route}) => {
   const selectedImagesShow = (images)=>{
     return;
   }
+  const navigationOptions = () => ({
+    headerBackTitle: 'Calendar',
+  });
 
     
           return (
@@ -162,6 +264,10 @@ const TodayMapDisplay = ({navigation,route}) => {
                       longitudeDelta: 0.02,
                   }
                 }
+                userLocationAnnotationTitle="Mylocation"
+                showsUserLocation={true}
+                showsMyLocationButton={true}
+                // followsUserLocation={true}
                 onRegionChangeComplete={region => {mapRef.current.getCamera().then((cam)=> {setAltitude(cam.altitude); }); }}
                 // onPanDrag={()=> {mapRef.current.getCamera().then((cam)=> {setAltitude(cam.altitude); }); }}
               >
@@ -213,17 +319,17 @@ const TodayMapDisplay = ({navigation,route}) => {
                     );
                 })}
 
-                    <Marker 
+                    {/* <Marker 
                     coordinate={markers.latlng} 
                     title={markers.title} 
                     description={markers.description} 
                     onPress={(e) => {
                     e.stopPropagation();
-                    Alert.alert("マーカーを押したよ")}} >
+                    Alert.alert("マーカーを押したよ")}} > */}
                       {/* <Text> */}
                       {/* {marker.image && <Image source={{ uri: marker.image }} style={{ width: 100, height: 100 }} />} */}
                       {/* </Text> */}
-                    </Marker>
+                    {/* </Marker> */}
                   
                   <Marker coordinate={{latitude: 35.249245,longitude: 139.686818}}>
 
@@ -231,7 +337,7 @@ const TodayMapDisplay = ({navigation,route}) => {
                   {/* <Button title="Reload Screen" onPress={ReadPhotos} /> */}
                     {/* {markers.image && <Image source={{ uri: markers.image }} style={{ width: 100, height: 100 }} />} */}
                   </Marker>
-                  {latlngs.length > 0 && <Polyline coordinates={latlngs} strokeColor="#000" strokeWidth={3} />}
+                  {latlngs.length > 0 && <Polyline coordinates={latlngs} strokeColor="rgba(255,0,0,0.5)" strokeWidth={5} />}
                 
               </MapView>
               <View style={{position : 'absolute', right : '0%'}}>
@@ -246,6 +352,7 @@ const TodayMapDisplay = ({navigation,route}) => {
                 {selectedimg.length > 0 && <Button title="MapModal" onPress={() => {navigation.navigate('MapModal',selectedimg)}}/>}
                 <Text>{route.params.date}</Text>
                 <Text>{altitude}</Text>
+                <Text>{calendarid}</Text>
 
                 
               </View>

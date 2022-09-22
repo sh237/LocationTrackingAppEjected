@@ -1,4 +1,4 @@
-import React, { Component, useState } from 'react';
+import React, { Component, useState,useEffect} from 'react';
 import { Button, View, Text, TextInput, StyleSheet } from 'react-native';
 import axios from 'axios';
 
@@ -15,7 +15,10 @@ const LoginOrCreateForm = (props) => {
 //     firstName: '',
 //     lastName: ''
 //   }
-
+  useEffect(() => {
+    setUser(user => ({...user, email: "syun864297531@gmail.com" }));
+    setUser(user => ({...user, password: "admin" }));
+  }, []);
   const onUsernameChange = (text)=>{ 
     setUser(user => ({...user, username: text }));
   };
@@ -36,7 +39,7 @@ const LoginOrCreateForm = (props) => {
       payload = { username: user.email, password: user.password }
     }
     console.log(payload);
-    
+
     axios
       .post(`/auth/${endpoint}`, payload)
       .then(response => {
@@ -81,6 +84,7 @@ const LoginOrCreateForm = (props) => {
       <Button title={buttonText} onPress={()=>{handleRequest()}}/>
     );
   }
+
 
 
   const renderCreateLink= ()=> {

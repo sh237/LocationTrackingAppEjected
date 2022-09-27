@@ -42,13 +42,13 @@ const MapDisplay = ({navigation,route}) => {
 
     useEffect(() => {
       getPhotos();
-      const nowLocal = new Date()  
-      const diff = nowLocal.getTimezoneOffset() * 60 * 1000
-      const plusLocal = new Date(nowLocal - diff) 
-      if(route.params.date == plusLocal.toISOString().split('T')[0]){
-        console.log("navigation"+navigation.getParent())
-        navigation.navigate("TodayMap",{user: route.params.user, date: route.params.date});
-      }
+      // const nowLocal = new Date()  
+      // const diff = nowLocal.getTimezoneOffset() * 60 * 1000
+      // const plusLocal = new Date(nowLocal - diff) 
+      // if(route.params.date == plusLocal.toISOString().split('T')[0]){
+      //   console.log("navigation"+navigation.getParent())
+      //   navigation.navigate("TodayMap",{user: route.params.user, date: route.params.date});
+      // }
       console.log("user:"+route.params.user+"date:"+route.params.date);
 
       axios
@@ -71,6 +71,13 @@ const MapDisplay = ({navigation,route}) => {
       
   
     }, []);
+    useEffect(() => {
+      // console.log("mapref")
+      // console.log(mapRef.current);
+      if( latlngs != null && latlngs.length > 0){
+        mapRef.current.animateToRegion(latlngs[0], 1 * 1000);
+      }
+    }, [latlngs, mapRef]);
 
   let getPhotos = () => {
     let from = new Date(route.params.date);

@@ -47,7 +47,7 @@ const TodayMapDisplay = ({navigation,route}) => {
       axios
       .get(`/api/calendar/${route.params.user}/?search=${route.params.date}`)
       .then(response => {
-        console.log("id___"+response.data.id);
+        console.log("id___" +response.data.id);
         const {id} = response.data;
         setCalendarId(id);
       })
@@ -94,90 +94,99 @@ const TodayMapDisplay = ({navigation,route}) => {
     }, []);
 
     useEffect(() => {
-      console.log("useEffect"+calendarid);
-      Geolocation.getCurrentPosition(
-        position => {
-          const {latitude, longitude} = position.coords;
-          setMarkers(marker=>({...marker,latlng:{"latitude":latitude,"longitude":longitude}})); 
-          const payload = { calendar: calendarid, mpoint:"MULTIPOINT ("+longitude+" "+latitude+")"};
-          axios.post(`/api/location/`,payload).then(response => {
-            console.log("updated location");
-          }).catch(error => console.log("post error:::"+error));
-        },
-        error => {
-          console.log(error.code, error.message);
-        },
-        {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
-      );
-      BackgroundGeolocation.onLocation(onLocation, onError);
-      BackgroundGeolocation.ready({
-        distanceFilter: 500,
-        stopOnTerminate: false,
-        startOnBoot: true, 
-        logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
-        debug: true,
-        locationUpdateInterval:60000,
-      }, (state) => {
-        console.log("- BackgroundGeolocation is ready: ", state);
+    //   console.log("useEffect"+calendarid);
+    //   Geolocation.getCurrentPosition(
+    //     position => {
+    //       const {latitude, longitude} = position.coords;
+    //       setMarkers(marker=>({...marker,latlng:{"latitude":latitude,"longitude":longitude}})); 
+    //       const payload = { calendar: calendarid, mpoint:"MULTIPOINT ("+longitude+" "+latitude+")"};
+    //       axios.post(`/api/location/`,payload).then(response => {
+    //         console.log("updated location");
+    //       }).catch(error => console.log("post error:::"+error));
+    //     },
+    //     error => {
+    //       console.log(error.code, error.message);
+    //     },
+    //     {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
+    //   );
+      // BackgroundGeolocation.onLocation(onLocation, onError);
+      // BackgroundGeolocation.ready({
+      //   distanceFilter: 500,
+      //   stopOnTerminate: false,
+      //   startOnBoot: true, 
+      //   logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
+      // }, (state) => {
+      //   console.log("- BackgroundGeolocation is ready: ");
 
-        if (!state.enabled) {
-          BackgroundGeolocation.start(function() {
-            console.log("- Start success");
-          });
-      }});
+      //   if (!state.enabled) {
+      //     BackgroundGeolocation.start(function() {
+      //       console.log("- Start success");
+      //     });
+      // }});
       
-      if(calendarid!=0){
-        axios.get(`/api/location/${calendarid}/`).then(response_ => {
-          const {geometry} = response_.data;
-          console.log("latlngs set");
-          const {coordinates} = geometry;
-          coordinates.map((v,i)=>{
-            setLatlngs(latlngs => [...latlngs, {latitude: v[1], longitude: v[0]}]);
-          })}).catch(error => {console.log(error);console.log("inner error");});
-        }
+      // if(calendarid!=0){
+      //   axios.get(`/api/location/${calendarid}/`).then(response_ => {
+      //     const {geometry} = response_.data;
+      //     console.log("latlngs set");
+      //     const {coordinates} = geometry;
+      //     coordinates.map((v,i)=>{
+      //       setLatlngs(latlngs => [...latlngs, {latitude: v[1], longitude: v[0]}]);
+      //     })}).catch(error => {console.log(error);console.log("inner error");});
+      //   }
+      const timer = setTimeout(loadLatLngs(), 60* 1000);//1分間隔
+      return () => {
+        console.log(
+          ' Clearing the interval and timeout',
+        );
+        clearTimeout(timer);
+      };
     }, [calendarid]);
 
     useEffect(() => {
       // console.log("mapref")
       // console.log(mapRef.current);
-      if( markers.latlng != null){
-        mapRef.current.animateToRegion(markers.latlng, 1 * 1000);
+      if( latlngs != null && latlngs != [] && latlngs.length>0){
+        mapRef.current.animateToRegion(latlngs[0], 1 * 1000);
       }
-    }, [markers.latlng, mapRef]);
+    }, [latlngs, mapRef]);
 
 
-    onLocation = (location) => {
-      // console.log("latlngs"+latlngs);
-      setMarkers(marker=>({...marker,latlng:{"latitude":location.coords.latitude,"longitude":location.coords.longitude}})); 
-      setLatlngs(latlngs => [...latlngs, {latitude: location.coords.latitude, longitude: location.coords.longitude}]);
-      if(calendarid!=0){
-        const payload = { calendar: calendarid, mpoint:"MULTIPOINT ("+location.coords.longitude+" "+location.coords.latitude+")"};
-        axios.put(`/api/location/update/${calendarid}`,payload).then(response => {
-          console.log("updated location");
-        }).catch(error => console.log("post error:::"+error));
-      }
-      if(mapRef != null && markers.latlng != null){
-      mapRef.current.animateToRegion(markers.latlng, 1 * 1000);
-      // loadLatLngs();
-      }
-      }
+    // onLocation = (location) => {
+    //   // console.log("latlngs"+latlngs);
+    //   setMarkers(marker=>({...marker,latlng:{"latitude":location.coords.latitude,"longitude":location.coords.longitude}})); 
+    //   setLatlngs(latlngs => [...latlngs, {latitude: location.coords.latitude, longitude: location.coords.longitude}]);
+    //   if(calendarid!=0){
+    //     const payload = { calendar: calendarid, mpoint:"MULTIPOINT ("+location.coords.longitude+" "+location.coords.latitude+")"};
+    //     axios.put(`/api/location/update/${calendarid}`,payload).then(response => {
+    //       console.log("updated location");
+    //     }).catch(error => console.log("post error:::"+error));
+    //   }
+    //   if(mapRef.current != null && markers.latlng != null){
+    //       mapRef.current.animateToRegion(markers.latlng, 1 * 1000);
+    //   // loadLatLngs();
+    //   }
+    //   }
     
+    // onError = (error) => {
+    //   console.warn('[location] ERROR -', error);
+    // }
 
-    onError = (error) => {
-      console.warn('[location] ERROR -', error);
-    }
     const loadLatLngs = () => {
+      console.log("timer");
       if(calendarid!=0){
-      axios.get(`/api/location/${calendarid}`).then(response => {
+      axios.get(`/api/location/${calendarid}/`).then(response_ => {
+        const coords = [];
         const {geometry} = response_.data;
-          console,log("latlngs set");
-            const {coordinates} = geometry;
-            coordinates.map((v,i)=>{
-              setLatlngs(latlngs => [...latlngs, {latitude: v[1], longitude: v[0]}]);
-            })}).catch(error => {console.log(error);console.log("inner error");});
+        console.log("latlngs set");
+        const {coordinates} = geometry;
+        coordinates.map((v,i)=>{
+        coords.push({latitude: v[1], longitude: v[0]});
+      })
+        setLatlngs(coords);
+      }).catch(error => {console.log(error);console.log("inner error");});
       }
+      
     }
-  
   
   
   let getPhotos = () => {
@@ -249,6 +258,7 @@ const TodayMapDisplay = ({navigation,route}) => {
     headerBackTitle: 'Calendar',
   });
 
+
     
           return (
             <View style={{flex:1}}>
@@ -264,11 +274,11 @@ const TodayMapDisplay = ({navigation,route}) => {
                       longitudeDelta: 0.02,
                   }
                 }
-                userLocationAnnotationTitle="Mylocation"
+                // userLocationAnnotationTitle="Mylocation"
                 showsUserLocation={true}
-                showsMyLocationButton={true}
+                // showsMyLocationButton={true}
                 // followsUserLocation={true}
-                onRegionChangeComplete={region => {mapRef.current.getCamera().then((cam)=> {setAltitude(cam.altitude); }); }}
+                // onRegionChangeComplete={region => {mapRef.current.getCamera().then((cam)=> {setAltitude(cam.altitude); }); }}
                 // onPanDrag={()=> {mapRef.current.getCamera().then((cam)=> {setAltitude(cam.altitude); }); }}
               >
 
@@ -288,21 +298,6 @@ const TodayMapDisplay = ({navigation,route}) => {
                       </React.Fragment>
                     );
                 })} */}
-                {/* <Modal
-                visible={imgmodal}
-                animationType={'slide'}
-                onRequestClose={() => this.closeModal()}
-                transparent
-                >
-                  <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: "#fff" }}>
-                    <Button
-                      onPress={() => this.closeModal()}
-                      title="Close modal"
-                    >
-                    </Button>
-                  </View>
-                </Modal> */}
-
 
                   {(group.length > 0 && group[0][0] != undefined) && group.map((g, i) => {
                     // console.log("groupp"+group);
@@ -342,7 +337,7 @@ const TodayMapDisplay = ({navigation,route}) => {
               </MapView>
               <View style={{position : 'absolute', right : '0%'}}>
               <Text>{photos.length}</Text>
-                <Button onPress={() => {mapRef.current.animateToRegion(markers.latlng, 1 * 1000);}} title="現在地へ" />
+                <Button onPress={() => {mapRef.current.animateToRegion(latlngs[0], 1 * 1000);}} title="現在地へ" />
                 <Button onPress={() => {ZoomIn();}} title="ズームイン" />
                 <Button onPress={() => {ZoomOut();}} title="ズームアウト" />
                 {/* <Text>{latlngs.length}</Text> */}

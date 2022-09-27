@@ -14,6 +14,10 @@ import Home from '../authentication/Home';
 import Icon from 'react-native-vector-icons/Entypo';
 import { forHorizontalModal } from './forHorizontalMordal';
 import BeforeModal from '../modal/BeforeModal';
+import ScheduleDisplay from '../schedule/ScheduleDisplay';
+import EditModal from '../modal/EditModal';
+import BottomTabNavigator from './BottomTabNavigator';
+
 // then use it as 
 
 
@@ -80,12 +84,12 @@ const RootStackScreen = () => {
 
         <RootStack.Screen
          name="Calendar" component={CalendarDisplay} screenOptions={{ headerStyle: styles.header }}
-         options={({ navigation })=>({
+         options={({ navigation,route })=>({
           // headerTitle: (props) => <LogoTitle {...props} />,
           // headerTitle: "" ,
           headerRight: () => (
             <TouchableOpacity style={this.button}>
-            <Icon name="menu" size={40} onPress={()=>navigation.navigate("BeforeModal")}/>
+            <Icon name="menu" size={40} onPress={()=>navigation.navigate("BeforeModal",{user:route.params.user, date:route.params.date})}/>
           </TouchableOpacity>
             // <Button
             //   onPress={() => alert('This is a button!')}
@@ -99,7 +103,8 @@ const RootStackScreen = () => {
           // cardStyleInterpolator: forHorizontalModal,
           
         })}/>
-        <RootStack.Screen name="Map" component={MapDisplay} />
+
+        {/* <RootStack.Screen name="Map" component={MapDisplay} /> */}
         <RootStack.Screen name="TodayMap" component={TodayMapDisplay} 
               options={({ navigation,route })=>({
           headerLeft: (props) => (
@@ -107,9 +112,28 @@ const RootStackScreen = () => {
           ),
         })}
   />
+  
         <RootStack.Screen name="Tracking" component={WatchLocation} />
         <RootStack.Screen name="Register" component={Register} />
         <RootStack.Screen name="Home" component={Home} />
+        {/* <RootStack.Screen name="Schedule" component={ScheduleDisplay} /> */}
+        <RootStack.Screen name="BottomTab" component={BottomTabNavigator} />
+        <RootStack.Group
+        screenOptions={{
+          presentation: 'transparentModal',
+          headerShown: false,
+        }}>
+        <RootStack.Screen name="EditModal" component={EditModal}
+        options={{
+          headerShown: false,
+          cardStyle:{ position:"relative",backgroundColor: '#00000099',flex: 1,opacity:1},
+          transitionSpec: {
+            open: config,
+            close: config,
+          },
+        }}
+         />
+        </RootStack.Group>
 
         <RootStack.Group
         screenOptions={{

@@ -3,6 +3,7 @@ import React,{useEffect,useState} from 'react'
 import { View, Text ,Button,TextInput} from 'react-native';
 import {StyleSheet} from 'react-native';
 import Icon from 'react-native-vector-icons/AntDesign';
+import onForegroundLocation from '../function/onForegroundLocation';
 
 const EditModal = ({navigation, route}) => {
     const [title, setTitle] = useState(route.params.title);
@@ -19,10 +20,10 @@ const EditModal = ({navigation, route}) => {
             console.log(payload);
             axios.post(`/api/calendar/`,payload).then(response => {
                 console.log("posted title");
-                navigation.navigate("Schedule",{user:route.params.user, date:route.params.date,title:title,description:"",not_created:false});
+                navigation.navigate("Schedule",{user:route.params.user, date:route.params.date,title:title,description:"",not_created:false,theme_color:route.params.theme_color});
                 }).catch(error => {
                     console.log(error);
-                    navigation.navigate("Schedule",{user:route.params.user, date:route.params.date,title:"",description:"",not_created:true});
+                    navigation.navigate("Schedule",{user:route.params.user, date:route.params.date,title:"",description:"",not_created:true,theme_color:route.params.theme_color});
                 });
         }else{
             const payload = {user:route.params.user,date:route.params.date, title: title, description: description};
@@ -30,9 +31,9 @@ const EditModal = ({navigation, route}) => {
             axios.put(`/api/calendar/${route.params.user}/?search=${route.params.date}`,payload).then(response_ => {
             console.log("updated title");
             const {title} = response_.data;
-            navigation.navigate("Schedule",{user:route.params.user, date:route.params.date,title:title,description:description,not_created:false});
+            navigation.navigate("Schedule",{user:route.params.user, date:route.params.date,title:title,description:description,not_created:false,theme_color:route.params.theme_color});
             
-            }).catch(error => {navigation.navigate("Schedule",{user:route.params.user, date:route.params.date, email:route.params.email,title:route.params.title,description:route.params.description,not_created:false});});
+            }).catch(error => {navigation.navigate("Schedule",{user:route.params.user, date:route.params.date, email:route.params.email,title:route.params.title,description:route.params.description,not_created:false,theme_color:route.params.theme_color});});
         }
     };
     const onDescriptionSubmit = ()=>{
@@ -41,25 +42,28 @@ const EditModal = ({navigation, route}) => {
             console.log(payload);
             axios.post(`/api/calendar/`,payload).then(response => {
                 console.log("posted title");
-                navigation.navigate("Schedule",{user:route.params.user, date:route.params.date,title:"",description:description,not_created:false});
+                navigation.navigate("Schedule",{user:route.params.user, date:route.params.date,title:"",description:description,not_created:false,theme_color:route.params.theme_color});
                 }).catch(error => {
                     console.log(error);
-                    navigation.navigate("Schedule",{user:route.params.user, date:route.params.date,title:"",description:"",not_created:true});
+                    navigation.navigate("Schedule",{user:route.params.user, date:route.params.date,title:"",description:"",not_created:true,theme_color:route.params.theme_color});
                 });
         }else{
         const payload = {user:route.params.user,date:route.params.date,title: title, description: description};
         axios.put(`/api/calendar/${route.params.user}/?search=${route.params.date}`,payload).then(response_ => {
             console.log("updated description");
             const {description} = response_.data;
-            navigation.navigate("Schedule",{user:route.params.user, date:route.params.date,title:title,description:description,not_created:false});
+            navigation.navigate("Schedule",{user:route.params.user, date:route.params.date,title:title,description:description,not_created:false,theme_color:route.params.theme_color});
             
-        }).catch(error => {navigation.navigate("Schedule",{user:route.params.user, date:route.params.date, email:route.params.email,title:route.params.title,description:route.params.description,not_created:false});});
+        }).catch(error => {navigation.navigate("Schedule",{user:route.params.user, date:route.params.date, email:route.params.email,title:route.params.title,description:route.params.description,not_created:false,theme_color:route.params.theme_color});});
     }
     };
 
 
     useEffect(() => {
     console.log(title);
+    // const timer = setTimeout(()=>onForegroundLocation(route.params.calendarid), 60 * 1000);
+
+    // return () => clearTimeout(timer);
 
     },[]);
 
@@ -68,7 +72,7 @@ const EditModal = ({navigation, route}) => {
     {route.params.isMultiline ? 
     (
         <View style={styles.screen1}>
-            <Icon name="closesquareo" size={35} style={styles.icon1} onPress={()=>navigation.navigate("Schedule",{user:route.params.user, date:route.params.date})}/>
+            <Icon name="closesquareo" size={35} style={styles.icon1} onPress={()=>navigation.navigate("Schedule",{user:route.params.user, date:route.params.date,theme_color:route.params.theme_color})}/>
             <Text style={styles.text1}>{route.params.text}</Text>
             <TextInput style={styles.textinput1} multiline={true} onChangeText={(text)=>{onDescriptionChange(text)}} value={description}></TextInput>
             <Text style={styles.button1} onPress={()=>onDescriptionSubmit()} >更新</Text>
@@ -76,7 +80,7 @@ const EditModal = ({navigation, route}) => {
     )
         :(
         <View style={styles.screen2}>
-            <Icon name="closesquareo" size={35} style={styles.icon2} onPress={()=>navigation.navigate("Schedule",{user:route.params.user, date:route.params.date})}/>
+            <Icon name="closesquareo" size={35} style={styles.icon2} onPress={()=>navigation.navigate("Schedule",{user:route.params.user, date:route.params.date,theme_color:route.params.theme_color})}/>
             <Text style={styles.text2}>{route.params.text}</Text>
             <TextInput style={styles.textinput2} onChangeText={(text)=>{onTitleChange(text)}} value={title}></TextInput>
             <Text style={styles.button2} onPress={()=>onTitleSubmit()} >更新</Text>

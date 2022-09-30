@@ -1,7 +1,13 @@
 import React from 'react'
 import { View, Text ,Button,Image} from 'react-native';
+import onForegroundLocation from '../function/onForegroundLocation';
 
 const MapModal = ({navigation,route}) => {
+    useEffect(() => {
+        // const timer = setTimeout(()=>onForegroundLocation(route.params.calendarid), 60 * 1000);
+
+        // return () => clearTimeout(timer);
+    },[]);
     return (
                 <View
                     style={{ flex:1, alignItems: 'center', justifyContent: 'center' }}

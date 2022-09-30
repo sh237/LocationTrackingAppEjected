@@ -1,6 +1,7 @@
 import React, { Component, useState,useEffect} from 'react';
 import { Button, View, Text, TextInput, StyleSheet } from 'react-native';
 import axios from 'axios';
+import { setGestureState } from 'react-native-reanimated/lib/reanimated2/NativeMethods';
 
 
 const LoginOrCreateForm = (props) => {
@@ -19,6 +20,7 @@ const LoginOrCreateForm = (props) => {
     setUser(user => ({...user, email: "syun864297531@gmail.com" }));
     setUser(user => ({...user, password: "admin" }));
   }, []);
+
   const onUsernameChange = (text)=>{ 
     setUser(user => ({...user, username: text }));
   };
@@ -50,8 +52,9 @@ const LoginOrCreateForm = (props) => {
         // Navigate to the home screen
         // Actions.main();
         axios.get('/auth/myself').then(response => {
-          const {id, email} = response.data;
-          props.navigation.navigate('Calendar', { user: id, email: email});
+          const {id, email, theme_color,is_tracking} = response.data;
+          // props.navigation.navigate('Calendar', { user: id, email: email, theme_color:theme_color});
+          props.navigation.navigate("Drawer", { screen: "Calendar" ,user: id, email: email, theme_color:theme_color, is_tracking:is_tracking});
         }).catch(error => console.log(error));
         
       })

@@ -20,7 +20,7 @@ const BottomTabNavigator = ({route}) => {
             initialParams={route.params}
           />
           {  route.params.date == new Date(new Date() -  new Date().getTimezoneOffset() * 60 * 1000).toISOString().split('T')[0]
-            ? <Tab.Screen name="TodayMap" component={TodayMapDisplay} initialParams={route.params}/>
+            ? <Tab.Screen name="TodayMap" component={TodayMapDisplay} initialParams={route.params}  />
             : <Tab.Screen name="Map" component={MapDisplay} initialParams={route.params}/>
 
           }

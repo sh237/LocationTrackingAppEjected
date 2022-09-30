@@ -7,23 +7,17 @@ import TodayMapDisplay from '../map/TodayMapDisplay';
 import CalendarDisplay from '../calendar/CalendarDisplay';
 import WatchLocation from '../tracking/TrackingDisplay'
 import MapModal from '../modal/MapModal';
-import SettingModal from '../modal/SettingModal';
 import Login from '../authentication/Login';
 import Register from '../authentication/Register';
 import Home from '../authentication/Home';
 import Icon from 'react-native-vector-icons/Entypo';
 import { forHorizontalModal } from './forHorizontalMordal';
-import BeforeModal from '../modal/BeforeModal';
 import ScheduleDisplay from '../schedule/ScheduleDisplay';
 import EditModal from '../modal/EditModal';
 import BottomTabNavigator from './BottomTabNavigator';
+import SettingsDisplay from '../settings/ColorSettingsDisplay';
+import DrawerNavigator from './DrawerNavigation';
 
-// then use it as 
-
-
-// import {LogBox} from "react-native";
-// LogBox.ignoreLogs(['new NativeEventEmitter']); // Ignore log notification by message
-// LogBox.ignoreAllLogs(); //Ignore all log notifications
 
 const RootStack = createStackNavigator();
 
@@ -51,65 +45,46 @@ const RootStackScreen = () => {
       restSpeedThreshold: 0.0001,
     },
   };
-  // const translateFocused = Animated.multiply(
-  //   current.progress.interpolate({
-  //     inputRange: [0, 1],
-  //     outputRange: [screen.width, 0],
-  //     extrapolate: "clamp"
-  //   }),
-  //   inverted
-  // );
-
-
-  // const horizontalAnimation = {
-  //   cardStyleInterpolator: ({ current, layouts }) => {
-  //     return {
-  //       cardStyle: {
-  //         transform: [
-  //           {
-  //             translateX: current.progress.interpolate({
-  //               inputRange: [0, 1],
-  //               outputRange: [layouts.screen.width, 0],
-  //             }),
-  //           },
-  //         ],
-  //       },
-  //     };
-  //   },
-  // };
   return (
     <NavigationContainer>
       <RootStack.Navigator>
-        <RootStack.Screen name="Login" component={Login} />
+        <RootStack.Screen name="Login" component={Login} screenOptions={{headerShown:false}}/>
 
-        <RootStack.Screen
+        {/* <RootStack.Screen
          name="Calendar" component={CalendarDisplay} screenOptions={{ headerStyle: styles.header }}
          options={({ navigation,route })=>({
           // headerTitle: (props) => <LogoTitle {...props} />,
           // headerTitle: "" ,
           headerRight: () => (
             <TouchableOpacity style={this.button}>
-            <Icon name="menu" size={40} onPress={()=>navigation.navigate("BeforeModal",{user:route.params.user, date:route.params.date})}/>
+            <Icon name="menu" size={40} onPress={()=>navigation.navigate("Drawer", { screen: "RightDrawer" ,date:route.params.date,user:route.params.user,email:route.params.email, title:route.params.title, description:route.params.description, theme_color:route.params.theme_color})}/>
           </TouchableOpacity>
-            // <Button
-            //   onPress={() => alert('This is a button!')}
-            //   title="Info"
-            //   // color="#fff"
-            //   style={styles.button}
-            // />
           ),
+          headerLeft: (props) => (
+            // <Button title="< ログアウト"  style={{fontSize:100,fontFamily: 'TrebuchetMS-Bold',}} onPress={()=>{navigation.navigate("Login",{})}}>ログアウト</Button>
+            <TouchableOpacity style={this.button}>
+              <Text style={{fontFamily:'TrebuchetMS-Bold', color:"skyblue"}} onPress={()=>navigation.navigate("Login",{})}>{"< ログアウト"}</Text>
+          </TouchableOpacity>
+          ),
+          headerTitle:"カレンダー",
+          headerLeftContainerStyle:{fontFamily:'TrebuchetMS-Bold',},
+          headerTitleStyle:{fontFamily: 'TrebuchetMS-Bold',},
           // mode: "modal",
           // gestureDirection: "horizontal",
           // cardStyleInterpolator: forHorizontalModal,
-          
-        })}/>
+        })}/> */}
 
         {/* <RootStack.Screen name="Map" component={MapDisplay} /> */}
         <RootStack.Screen name="TodayMap" component={TodayMapDisplay} 
               options={({ navigation,route })=>({
-          headerLeft: (props) => (
-            <Button title="Calendar" onPress={()=>{navigation.navigate("Calendar",{user: route.params.user, date: route.params.date})}}>Calendar</Button>
-          ),
+                headerLeft: () => (
+                  <TouchableOpacity style={this.button}>
+                    <Text style={{fontFamily:'TrebuchetMS-Bold', color:"skyblue"}} onPress={()=>navigation.navigate("Login",{})}>{"< ログアウト"}</Text>
+                </TouchableOpacity>
+                ),
+              // headerLeft: (props) => (
+              //   <Button title="Calendar" onPress={()=>{navigation.navigate("Drawer", { screen: "Calendar" ,user: route.params.user, date: route.params.date, theme_color:route.params.theme_color});}}>Calendar</Button>
+              // ),
         })}
   />
   
@@ -117,7 +92,19 @@ const RootStackScreen = () => {
         <RootStack.Screen name="Register" component={Register} />
         <RootStack.Screen name="Home" component={Home} />
         {/* <RootStack.Screen name="Schedule" component={ScheduleDisplay} /> */}
-        <RootStack.Screen name="BottomTab" component={BottomTabNavigator} />
+        <RootStack.Screen name="BottomTab" component={BottomTabNavigator} 
+        options={({ navigation,route })=>({
+                    title:"",
+                    headerLeft: () => (
+                    <TouchableOpacity style={this.button}>
+                        <Text style={{fontFamily:'TrebuchetMS-Bold', color:"royalblue"}} onPress={()=>{navigation.navigate("Drawer", { screen: "Calendar" ,user: route.params.user, date: route.params.date, theme_color:route.params.theme_color});}}>{"  < カレンダーに戻る"}</Text>
+                    </TouchableOpacity>
+                    ),
+                // headerLeft: (props) => (
+                //   <Button title="Calendar" onPress={()=>{navigation.navigate("Drawer", { screen: "Calendar" ,user: route.params.user, date: route.params.date, theme_color:route.params.theme_color});}}>Calendar</Button>
+                // ),
+            })}/>
+        <RootStack.Screen name="Drawer" component={DrawerNavigator} options={{headerShown:false}}/>
         <RootStack.Group
         screenOptions={{
           presentation: 'transparentModal',
@@ -137,26 +124,6 @@ const RootStackScreen = () => {
 
         <RootStack.Group
         screenOptions={{
-          presentation: 'transparentModal',
-          headerShown: false,
-          // gestureDirection: "horizontal",
-          // cardStyleInterpolator: forHorizontalModal,
-        }}>
-        <RootStack.Screen name="BeforeModal" component={BeforeModal}
-        options={{
-          headerShown: false,
-          cardStyle:{ position:"relative",backgroundColor: '#00000099'},
-          // gestureDirection: "horizontal",
-          // cardStyleInterpolator: forHorizontalModal,
-          transitionSpec: {
-            open: config,
-            close: config,
-          },
-        }}
-         />
-        </RootStack.Group>
-        <RootStack.Group
-        screenOptions={{
           presentation: 'modal',
           headerShown: false,
         }}
@@ -168,6 +135,22 @@ const RootStackScreen = () => {
         }}
       />
       </RootStack.Group>
+        <RootStack.Group
+        screenOptions={{
+          presentation: 'modal',
+          headerShown: true,
+        }}
+      >
+        <RootStack.Screen name="Settings" component={SettingsDisplay} 
+        options={
+          ({ navigation,route })=>({
+            headerShown: true,
+            headerLeft: (props) => (
+            <Button title="Calendar" onPress={()=>{navigation.navigate("Calendar",{user: route.params.user, date: route.params.date,theme_color:route.params.theme_color})}}>Calendar</Button>
+          ),
+        })}
+      />
+      </RootStack.Group>
 
         <RootStack.Group
         screenOptions={{
@@ -177,15 +160,6 @@ const RootStackScreen = () => {
           // cardStyleInterpolator: forHorizontalModal,
         }}
       >
-        <RootStack.Screen name="SettingModal" component={SettingModal} 
-        options={{
-          headerShown: false,
-          cardStyle:{ position:"relative"},
-          gestureDirection: "horizontal",
-          cardStyleInterpolator: forHorizontalModal,
-         
-        }}
-      />
       </RootStack.Group>
       </RootStack.Navigator>
     </NavigationContainer>

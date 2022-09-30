@@ -1,73 +1,70 @@
-import React,{useState, useEffect} from 'react'
+import React,{useState, useEffect,useContext} from 'react'
 import {StyleSheet, View, Text, Button,TouchableOpacity,AppState} from 'react-native';
 import { Calendar,LocaleConfig } from 'react-native-calendars';
 import moment from "moment";
 import axios from 'axios';
 import {Moment} from 'moment';
+import {OnLocationContext} from '../navigation/DrawerNavigation';
 import Geolocation from 'react-native-geolocation-service';
 import BackgroundGeolocation from "react-native-background-geolocation";
+import onForegroundLocation from '../function/onForegroundLocation';
+import { LogBox } from 'react-native';
 
+LogBox.ignoreLogs([
+  'Non-serializable values were found in the navigation state',
+]);
 const INITIAL_DATE = moment().format("YYYY-MM-DD");
 
 const CalendarDisplay = ({navigation, route}) => {
     const [currentDate, setCurrentDate] = useState(moment());
     const [appState, setAppState] = useState(AppState.currentState);
     const [calendarid, setCalendarid] = useState(0);
+    const {subscription, setSubscription } = useContext(OnLocationContext);
 
-    const handleAppStateChange = (nextAppState) => {
-      let subscription = null;
-      console.log('app State: ' + appState+' next app State: '+nextAppState);
-      if (appState != nextAppState) {
-        if(nextAppState.match(/inactive|background/)){
-          console.log(
-            'App State: ' +
-            'App has come to the background!'
-          );
-          // alert(
-          //   'App State: ' +
-          //   'App has come to the background!'
-          // );
-          console.log("back"+subscription)
-          if(subscription == null){
-            subscription = BackgroundGeolocation.onLocation(onLocation, onError);
-          }
-        }
-        console.log("set")
+    // let subscription = null;
+    // const handleAppStateChange = (nextAppState) => {
+    //   // if(subscription != null){
+    //   //   subscription.remove();
+    //   //   setSubscription(null);
+    //   // }
 
-        // alert('App State: ' + nextAppState);
-        setAppState(nextAppState);
-      }
-      if (nextAppState === "active") {
-        console.log(
-          'App State: ' +
-          'App has come to the foreground!'
-        );
-        // alert(
-        //   'App State: ' +
-        //   'App has come to the foreground!'
-        // );
-        console.log("fore"+subscription);
-        // if (calendarid != 0) {
-        //   console.log("timeout");
-        //   const timer = setTimeout(Geolocation.getCurrentPosition(
-        //     position => {
-        //       const {latitude, longitude} = position.coords;
-        //       const payload = { calendar: calendarid, mpoint:"MULTIPOINT ("+longitude+" "+latitude+")"};
-        //       axios.put(`/api/location/update/${calendarid}`,payload).then(response => {
-        //         console.log("updated location");
-        //       }).catch(error => console.log("post error:::"+error));
-        //     },
-        //     error => {
-        //       console.log(error.code, error.message);
-        //     },
-        //     {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
-        //   ), 60 * 1000);
-        //   }
-      }
-    };
+    //   console.log('app State: ' + appState+' next app State: '+nextAppState);
+    //   if (appState != nextAppState) {
+    //     if(nextAppState.match(/inactive|background/) && appState === 'active'){
+    //       console.log(
+    //         'App State: ' +
+    //         'App has come to the background!'
+    //       );
+    //       // alert(
+    //       //   'App State: ' +
+    //       //   'App has come to the background!'
+    //       // );
+    //       console.log("back"+subscription)
+    //       if(subscription == null){
+    //         subscription = BackgroundGeolocation.onLocation(onLocation, onError);
+    //       }
+    //     }
+    //     console.log("set")
+
+    //     // alert('App State: ' + nextAppState);
+    //     if (nextAppState === "active") {
+    //       console.log(
+    //         'App State: ' +
+    //         'App has come to the foreground!'
+    //       );
+    //       // if(subscription != null){
+    //       //   subscription.remove();
+    //         // setSubscription(null);
+    //       // }
+
+
+    //       console.log("fore"+subscription);
+    //     }
+    //     setAppState(nextAppState);
+    //   }
+    // };
 
     useEffect(() => {
-      console.log("CalendarDisplay.js"+new Date(new Date() -  new Date().getTimezoneOffset() * 60 * 1000).toISOString().split('T')[0]);
       axios
       .get(`/api/calendar/${route.params.user}/?search=${new Date(new Date() -  new Date().getTimezoneOffset() * 60 * 1000).toISOString().split('T')[0]}`)
       .then(response => {
@@ -86,26 +83,12 @@ const CalendarDisplay = ({navigation, route}) => {
           }
           ).catch(error => console.log("inner:::"+error));
       });
-      BackgroundGeolocation.ready({
-        distanceFilter: 500,
-        stopOnTerminate: false,
-        startOnBoot: true, 
-        logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
-      }, (state) => {
-        console.log("- BackgroundGeolocation is ready: ");
-
-        if (!state.enabled) {
-          BackgroundGeolocation.start(function() {
-            console.log("- Start success");
-          });
-      }});
-
-
       
 }, []);
 
+
 useEffect(() => {
-  console.log("useEffect"+calendarid);
+  if(calendarid != 0 && calendarid != null){
   Geolocation.getCurrentPosition(
     position => {
       const {latitude, longitude} = position.coords;
@@ -119,29 +102,44 @@ useEffect(() => {
     },
     {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
   );
-  AppState.addEventListener('change', handleAppStateChange);
-  // return () => {
-  //     AppState.removeEventListener('change', handleAppStateChange);
-  // };
+  BackgroundGeolocation.ready({
+    distanceFilter: 500,
+    stopOnTerminate: false,
+    startOnBoot: true, 
+    logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
+  }, (state) => {
+    console.log("- BackgroundGeolocation is ready: ");
 
-  console.log("timeout");
-  const timer = setTimeout(Geolocation.getCurrentPosition(
-    position => {
-      const {latitude, longitude} = position.coords;
-      const payload = { calendar: calendarid, mpoint:"MULTIPOINT ("+longitude+" "+latitude+")"};
-      axios.put(`/api/location/update/${calendarid}`,payload).then(response => {
-        console.log("updated location");
-      }).catch(error => console.log("post error:::"+error));
-    },
-    error => {
-      console.log(error.code, error.message);
-    },
-    {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
-  ), 60 * 1000);
-
-  return () => clearTimeout(timer);
+    if (!state.enabled) {
+      BackgroundGeolocation.start(function() {
+        console.log("- Start success");
+      });
+  }});
+  const subscription = BackgroundGeolocation.onLocation(onLocation, onError);
+  setSubscription(subscription);
   
+}
 }, [calendarid]);
+
+const stopOnLocation = () =>{
+  console.log("stopOnLocation");
+  if(subscription!= null){
+    subscription["remove"]();
+    setSubscription(null);
+  }
+}
+const checkOnLocation = () =>{
+  console.log("subscription")
+  console.log(subscription)
+}
+
+const startOnLocation = () =>{
+  console.log("startOnLocation")
+  if(subscription==null){
+    setSubscription(BackgroundGeolocation.onLocation(onLocation, onError));
+  }
+}
+
 
 
 const onLocation = (location) => {
@@ -178,11 +176,11 @@ const onError = (error) => {
       .then(response => {
         const {title,description} = response.data;
         console.log("title:"+title+"description:"+description);
-        navigation.navigate("BottomTab", { screen: "Schedule" ,date:new Date(day.dateString).toISOString().split('T')[0],user:route.params.user,email:route.params.email, title:title, description:description,not_created:false});
+        navigation.navigate("BottomTab", { screen: "Schedule" ,date:new Date(day.dateString).toISOString().split('T')[0],user:route.params.user,email:route.params.email, title:title, description:description,not_created:false,theme_color:route.params.theme_color});
         // navigation.navigate("Schedule",{date:new Date(day.dateString).toISOString().split('T')[0],user:route.params.user,email:route.params.email, title:title, description:description,not_created:false});
       })
       .catch(error => { 
-        navigation.navigate("BottomTab", { screen: "Schedule" ,date:new Date(day.dateString).toISOString().split('T')[0],user:route.params.user,email:route.params.email, title:"", description:"", not_created:true});
+        navigation.navigate("BottomTab", { screen: "Schedule" ,date:new Date(day.dateString).toISOString().split('T')[0],user:route.params.user,email:route.params.email, title:"", description:"", not_created:true,theme_color:route.params.theme_color});
         // navigation.navigate("Schedule",{date:new Date(day.dateString).toISOString().split('T')[0],user:route.params.user,email:route.params.email, title:"", description:"", not_created:true});
       });
     }
@@ -220,33 +218,9 @@ const onError = (error) => {
           );
         }}
       />
-        {/* <View/> */}
-        <Text>DetailScreen</Text>
-        <Button
-        title="Log In画面に遷移する"
-        onPress={() => {
-            navigation.navigate('Login');
-        }}
-        />
-        <Button
-        title="Home画面に遷移する"
-        onPress={() => {
-            navigation.navigate('Home');
-        }}
-        />
-        <Button
-        title="Sign up画面に遷移する"
-        onPress={() => {
-            navigation.navigate('Register');
-        }}
-        />
-        <Button
-        title="ScheduleDisplay画面に遷移する"
-        onPress={() => {
-            navigation.navigate("BottomTab", { screen: "Schedule" ,user:route.params.user, date:route.params.date});
-            navigation.navigate('Schedule',{user:route.params.user, date:route.params.date});
-        }}
-        />
+      {/* <Button onPress={()=>{stopOnLocation()}} title="止める"></Button>
+      <Button onPress={()=>{checkOnLocation()}} title="確認"></Button>
+      <Button onPress={()=>{startOnLocation()}} title="始める"></Button> */}
   </View>
 );
 };
@@ -272,7 +246,6 @@ container: {
   flex: 1,
   justifyContent: 'center',
   alignItems: 'center',
-  
 },
 calendar: {
   fontfamily:"TrebuchetMS-Bold",
@@ -281,6 +254,7 @@ calendar: {
   borderWidth: 1,
   borderColor: 'gray',
   borderRadius: 10,
+  bottom:50,
 },
 header: {
   fontFamily:"TrebuchetMS-Bold",

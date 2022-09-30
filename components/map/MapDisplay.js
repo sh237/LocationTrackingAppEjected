@@ -5,6 +5,7 @@ import Geolocation from 'react-native-geolocation-service';
 import {decode} from "@mapbox/polyline";
 import {CameraRoll }from '@react-native-camera-roll/camera-roll';
 import axios from 'axios';
+import onForegroundLocation from '../function/onForegroundLocation';
 // import Exif from 'react-native-exif';
 
 const MapDisplay = ({navigation,route}) => {
@@ -68,7 +69,9 @@ const MapDisplay = ({navigation,route}) => {
         }
       })
       .catch(error => {console.log(error); console.log("outer error");setLatlngs([{latitude: 35.249245, longitude: 139.686818}]);});
-      
+      // const timer = setTimeout(()=>onForegroundLocation(calendarid), 60 * 1000);
+
+      // return () => clearTimeout(timer);
   
     }, []);
     useEffect(() => {
@@ -168,7 +171,7 @@ const MapDisplay = ({navigation,route}) => {
                     console.log("date"+g[0].node.timestamp*1000);
                   return (
                     <React.Fragment key={i}>
-                      <Marker title={g.length.toString()} description={g.length.toString()}coordinate={{latitude:g[0].node.location.latitude, longitude:g[0].node.location.longitude}} onPress={()=>{navigation.navigate('MapModal',{images:g})}}>
+                      <Marker title={g.length.toString()} description={g.length.toString()}coordinate={{latitude:g[0].node.location.latitude, longitude:g[0].node.location.longitude}} onPress={()=>{navigation.navigate('MapModal',{user:user.params.user,date:route.params.date,images:g,theme_color:route.params.theme_color})}}>
                       <Image  style={{ width: 50, height: 50, }} resizeMode="contain" 
                       source={{ uri: g[0].node.image.uri }}/>
                       </Marker>
@@ -203,10 +206,10 @@ const MapDisplay = ({navigation,route}) => {
                 <Button onPress={() => {ZoomIn();}} title="ズームイン" />
                 <Button onPress={() => {ZoomOut();}} title="ズームアウト" />
                 {/* <Text>{latlngs.length}</Text> */}
-                <Button title="Move to Calendar" onPress={() => {navigation.navigate('Calendar');}}/>
+                <Button title="Move to Calendar" onPress={() => {navigation.navigate('Calendar',{user:route.params.user, date:route.params.date,theme_color:route.params.theme_color});}}/>
                 <Button title="latlngsの確認" onPress={() => {console.log("latlngs"+JSON.stringify(latlngs));}}/>
                 <Button title="openModal" onPress={() => {openModal();}}/>
-                {selectedimg.length > 0 && <Button title="MapModal" onPress={() => {navigation.navigate('MapModal',selectedimg)}}/>}
+                {selectedimg.length > 0 && <Button title="MapModal" onPress={() => {navigation.navigate('MapModal',{user:route.params.user, date:route.params.date,images:selectedimg,theme_color:route.params.theme_color})}}/>}
                 <Text>{route.params.date}</Text>
                 <Text>{altitude}</Text>
                 

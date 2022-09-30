@@ -4,7 +4,7 @@ import MapView, { Marker, Polyline} from 'react-native-maps';
 import {CameraRoll }from '@react-native-camera-roll/camera-roll';
 import BackgroundGeolocation from "react-native-background-geolocation";
 import Geolocation from 'react-native-geolocation-service';
-
+import onForegroundLocation from '../function/onForegroundLocation';
 
 import axios from 'axios';
 // import Exif from 'react-native-exif';
@@ -63,77 +63,12 @@ const TodayMapDisplay = ({navigation,route}) => {
           ).catch(error => console.log("inner:::"+error));
       });
       
-
-
-      // BackgroundGeolocation.onLocation(onLocation, onError);
-      // BackgroundGeolocation.ready({
-      //   distanceFilter: 10,
-      //   stopOnTerminate: false,
-      //   startOnBoot: true, 
-      //   logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
-      //   debug: true,
-      // }, (state) => {
-      //   console.log("- BackgroundGeolocation is ready: ", state);
-
-      //   if (!state.enabled) {
-      //     BackgroundGeolocation.start(function() {
-      //       console.log("- Start success");
-      //     });
-      // }});
-
-      // BackgroundGeolocation.getCurrentPosition({
-      //   samples: 1,
-      //   persist: true
-      // }).then((location) => {
-      //   setMarkers(marker=>({...marker,latlng:{"latitude":location.coords.latitude,"longitude":location.coords.longitude}})); 
-      //   const payload = { calendar: tempid, mpoint:"MULTIPOINT ("+location.coords.longitude+" "+location.coords.latitude+")"};
-      //   axios.post(`/api/location/`,payload).then(response => {
-      //     console.log("updated location");
-      //   }).catch(error => console.log("post error:::"+error));
-      // });
     }, []);
 
     useEffect(() => {
-    //   console.log("useEffect"+calendarid);
-    //   Geolocation.getCurrentPosition(
-    //     position => {
-    //       const {latitude, longitude} = position.coords;
-    //       setMarkers(marker=>({...marker,latlng:{"latitude":latitude,"longitude":longitude}})); 
-    //       const payload = { calendar: calendarid, mpoint:"MULTIPOINT ("+longitude+" "+latitude+")"};
-    //       axios.post(`/api/location/`,payload).then(response => {
-    //         console.log("updated location");
-    //       }).catch(error => console.log("post error:::"+error));
-    //     },
-    //     error => {
-    //       console.log(error.code, error.message);
-    //     },
-    //     {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
-    //   );
-      // BackgroundGeolocation.onLocation(onLocation, onError);
-      // BackgroundGeolocation.ready({
-      //   distanceFilter: 500,
-      //   stopOnTerminate: false,
-      //   startOnBoot: true, 
-      //   logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
-      // }, (state) => {
-      //   console.log("- BackgroundGeolocation is ready: ");
-
-      //   if (!state.enabled) {
-      //     BackgroundGeolocation.start(function() {
-      //       console.log("- Start success");
-      //     });
-      // }});
-      
-      // if(calendarid!=0){
-      //   axios.get(`/api/location/${calendarid}/`).then(response_ => {
-      //     const {geometry} = response_.data;
-      //     console.log("latlngs set");
-      //     const {coordinates} = geometry;
-      //     coordinates.map((v,i)=>{
-      //       setLatlngs(latlngs => [...latlngs, {latitude: v[1], longitude: v[0]}]);
-      //     })}).catch(error => {console.log(error);console.log("inner error");});
-      //   }
-      const timer = setTimeout(loadLatLngs(), 60* 1000);//1分間隔
+      console.log("setTimeout")
+      loadLatLngs()
+      const timer = setTimeout(()=>loadLatLngs(), 60* 1000);//1分間隔
       return () => {
         console.log(
           ' Clearing the interval and timeout',
@@ -149,27 +84,6 @@ const TodayMapDisplay = ({navigation,route}) => {
         mapRef.current.animateToRegion(latlngs[0], 1 * 1000);
       }
     }, [latlngs, mapRef]);
-
-
-    // onLocation = (location) => {
-    //   // console.log("latlngs"+latlngs);
-    //   setMarkers(marker=>({...marker,latlng:{"latitude":location.coords.latitude,"longitude":location.coords.longitude}})); 
-    //   setLatlngs(latlngs => [...latlngs, {latitude: location.coords.latitude, longitude: location.coords.longitude}]);
-    //   if(calendarid!=0){
-    //     const payload = { calendar: calendarid, mpoint:"MULTIPOINT ("+location.coords.longitude+" "+location.coords.latitude+")"};
-    //     axios.put(`/api/location/update/${calendarid}`,payload).then(response => {
-    //       console.log("updated location");
-    //     }).catch(error => console.log("post error:::"+error));
-    //   }
-    //   if(mapRef.current != null && markers.latlng != null){
-    //       mapRef.current.animateToRegion(markers.latlng, 1 * 1000);
-    //   // loadLatLngs();
-    //   }
-    //   }
-    
-    // onError = (error) => {
-    //   console.warn('[location] ERROR -', error);
-    // }
 
     const loadLatLngs = () => {
       console.log("timer");
@@ -282,22 +196,6 @@ const TodayMapDisplay = ({navigation,route}) => {
                 // onPanDrag={()=> {mapRef.current.getCamera().then((cam)=> {setAltitude(cam.altitude); }); }}
               >
 
-                  {/* {photos.length > 0 && photos.map((p, i) => {
-                  return (
-                    <React.Fragment key={i}>
-                    {(p.node.hasOwnProperty('location')&& p.node.location != null) ? (
-                      <Marker title={new Date(p.node.timestamp*1000).toLocaleString()}coordinate={{latitude:p.node.location.latitude, longitude:p.node.location.longitude}} >
-                      <Image  style={{ width: 50, height: 50, }} resizeMode="contain"
-                      source={{ uri: p.node.image.uri }}/>
-                      </Marker>) 
-                    : (
-                      <Marker coordinate={markers.latlng} >
-                      <Image  style={{ width: 50, height: 50, }} resizeMode="contain"
-                        source={{ uri: p.node.image.uri }} />
-                      </Marker>)}
-                      </React.Fragment>
-                    );
-                })} */}
 
                   {(group.length > 0 && group[0][0] != undefined) && group.map((g, i) => {
                     // console.log("groupp"+group);
@@ -314,18 +212,6 @@ const TodayMapDisplay = ({navigation,route}) => {
                     );
                 })}
 
-                    {/* <Marker 
-                    coordinate={markers.latlng} 
-                    title={markers.title} 
-                    description={markers.description} 
-                    onPress={(e) => {
-                    e.stopPropagation();
-                    Alert.alert("マーカーを押したよ")}} > */}
-                      {/* <Text> */}
-                      {/* {marker.image && <Image source={{ uri: marker.image }} style={{ width: 100, height: 100 }} />} */}
-                      {/* </Text> */}
-                    {/* </Marker> */}
-                  
                   <Marker coordinate={{latitude: 35.249245,longitude: 139.686818}}>
 
                   
@@ -341,7 +227,7 @@ const TodayMapDisplay = ({navigation,route}) => {
                 <Button onPress={() => {ZoomIn();}} title="ズームイン" />
                 <Button onPress={() => {ZoomOut();}} title="ズームアウト" />
                 {/* <Text>{latlngs.length}</Text> */}
-                <Button title="Move to Calendar" onPress={() => {navigation.navigate('Calendar');}}/>
+                <Button title="Move to Calendar" onPress={() => {navigation.navigate('Calendar',{theme_color:route.params.theme_color});}}/>
                 <Button title="photosとgroupの確認" onPress={() => {console.log("photos"+photos);console.log("group"+group);}}/>
                 <Button title="openModal" onPress={() => {openModal();}}/>
                 {selectedimg.length > 0 && <Button title="MapModal" onPress={() => {navigation.navigate('MapModal',selectedimg)}}/>}

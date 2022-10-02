@@ -1,4 +1,4 @@
-import React,{ useState, createContext, useContext } from 'react'
+import React,{ useState, useEffect, useContext } from 'react'
 import {
   DrawerContentScrollView,
   DrawerItemList,
@@ -13,29 +13,31 @@ const Drawer = createDrawerNavigator();
 export const OnLocationContext = React.createContext({
   subscription: null,
   setSubscription: () => undefined,
+  calendarid: 0,
+  setCalendarid: () => undefined,
 });
 
-function CustomDrawerContent(props) {
-  console.log("props")
-  console.log(props)
-  return (
-    <DrawerContentScrollView {...props}>
-      <DrawerItemList {...props} />
-      <DrawerItem
-        label="Help"
-        onPress={() => Linking.openURL('https://mywebsite.com/help')}
-      />
-    </DrawerContentScrollView>
-  );
-}
 
 
 const DrawerNavigator = ({route}) => {
   const [subscription, setSubscription] = useState(null); 
+  const [calendarid, setCalendarid] = useState(0);
+
     return (
-      <OnLocationContext.Provider value={{subscription, setSubscription}}>
+      <OnLocationContext.Provider value={{subscription, setSubscription, calendarid, setCalendarid}}>
         <Drawer.Navigator initialRouteName="Calendar" screenOptions={{
           headerShown: false,
+          headerStyle: {
+            backgroundColor: (route.params.theme_color == 0) ? 'gray'  : (route.params.theme_color == 1) ? '#404040' : 'lightpink',
+          },
+          headerTintColor: (route.params.theme_color == 0) ? 'snow'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white',
+          drawerStyle: {
+            backgroundColor: (route.params.theme_color == 0) ? '#404040'  : (route.params.theme_color == 1) ? '#404040' : 'lightpink',
+          },
+          drawerLabelStyle: {
+            color:((route.params.theme_color == 0) ? '#fff'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white'),
+          }
+
         }} >
 
             <Drawer.Screen name="Calendar" component={CalendarDisplay} 

@@ -20,6 +20,10 @@ import DrawerNavigator from './DrawerNavigation';
 
 
 const RootStack = createStackNavigator();
+export const ImageContext = React.createContext({
+  group: null,
+  setGroup: () => undefined,
+});
 
 const RootStackScreen = () => {
   const styles = StyleSheet.create({
@@ -45,9 +49,17 @@ const RootStackScreen = () => {
       restSpeedThreshold: 0.0001,
     },
   };
+  const [group, setGroup] = React.useState(null);
+
   return (
+    <ImageContext.Provider value={{group, setGroup}}>
     <NavigationContainer>
-      <RootStack.Navigator>
+      <RootStack.Navigator screenOptions={({ navigation,route })=>({
+          headerStyle: {
+            backgroundColor: (route.params != undefined) ? ((route.params.theme_color == 0) ? 'gray'  : (route.params.theme_color == 1) ? '#404040' : 'lightpink') : 'white',
+          },
+          headerTintColor:(route.params != undefined) ? ((route.params.theme_color == 0) ? 'snow'  : (route.params.theme_color == 1) ? 'gainsboro' : 'lightpink') : 'white',
+        })}>
         <RootStack.Screen name="Login" component={Login} screenOptions={{headerShown:false}}/>
 
         {/* <RootStack.Screen
@@ -94,12 +106,14 @@ const RootStackScreen = () => {
         {/* <RootStack.Screen name="Schedule" component={ScheduleDisplay} /> */}
         <RootStack.Screen name="BottomTab" component={BottomTabNavigator} 
         options={({ navigation,route })=>({
-                    title:"",
-                    headerLeft: () => (
-                    <TouchableOpacity style={this.button}>
-                        <Text style={{fontFamily:'TrebuchetMS-Bold', color:"royalblue"}} onPress={()=>{navigation.navigate("Drawer", { screen: "Calendar" ,user: route.params.user, date: route.params.date, theme_color:route.params.theme_color});}}>{"  < カレンダーに戻る"}</Text>
-                    </TouchableOpacity>
-                    ),
+                    // title:"",
+                    headerShown:false,
+                    // headerLeft: () => (
+                    // <TouchableOpacity style={this.button}>
+                    //     <Text style={{fontFamily:'TrebuchetMS-Bold', color:((route.params.theme_color == 0) ? '#fff'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white')}} onPress={()=>{navigation.navigate("Drawer", { screen: "Calendar" ,user: route.params.user, date: route.params.date, theme_color:route.params.theme_color});}}>{"  < カレンダーに戻る"}</Text>
+                    // </TouchableOpacity>
+                    // ),
+                    
                 // headerLeft: (props) => (
                 //   <Button title="Calendar" onPress={()=>{navigation.navigate("Drawer", { screen: "Calendar" ,user: route.params.user, date: route.params.date, theme_color:route.params.theme_color});}}>Calendar</Button>
                 // ),
@@ -163,6 +177,7 @@ const RootStackScreen = () => {
       </RootStack.Group>
       </RootStack.Navigator>
     </NavigationContainer>
+    </ImageContext.Provider>
   );
 };
 

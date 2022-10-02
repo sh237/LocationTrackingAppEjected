@@ -1,11 +1,11 @@
-import React , { Component,useState, useEffect,useRoute,useRef, useInsertionEffect } from 'react';
+import React , { Component,useState, useEffect,useContext,useRef, useInsertionEffect } from 'react';
 import { StyleSheet, Text, View ,Image, Button, Alert, Dimensions, Modal} from 'react-native';
 import MapView, { Marker, Polyline} from 'react-native-maps';
-import Geolocation from 'react-native-geolocation-service';
-import {decode} from "@mapbox/polyline";
 import {CameraRoll }from '@react-native-camera-roll/camera-roll';
 import axios from 'axios';
-import onForegroundLocation from '../function/onForegroundLocation';
+import Icon from 'react-native-vector-icons/Entypo';
+import { ImageContext } from '../navigation/index';
+
 // import Exif from 'react-native-exif';
 
 const MapDisplay = ({navigation,route}) => {
@@ -15,7 +15,7 @@ const MapDisplay = ({navigation,route}) => {
     // let [proba, setProba] = useState(0);
     let [latlngs, setLatlngs] = useState([]);
     let [photos, setPhotos] = useState({});
-    let [group, setGroup] = useState([]);
+    let {group, setGroup} = useContext(ImageContext);
     let [imgmodal, setImgModal] = useState(false);
     let [selectedimg, setSelectedImg] = useState([]);
     let [isfirst, setIsFirst] = useState(true);
@@ -42,14 +42,6 @@ const MapDisplay = ({navigation,route}) => {
     }
 
     useEffect(() => {
-      getPhotos();
-      // const nowLocal = new Date()  
-      // const diff = nowLocal.getTimezoneOffset() * 60 * 1000
-      // const plusLocal = new Date(nowLocal - diff) 
-      // if(route.params.date == plusLocal.toISOString().split('T')[0]){
-      //   console.log("navigation"+navigation.getParent())
-      //   navigation.navigate("TodayMap",{user: route.params.user, date: route.params.date});
-      // }
       console.log("user:"+route.params.user+"date:"+route.params.date);
 
       axios
@@ -60,7 +52,6 @@ const MapDisplay = ({navigation,route}) => {
           setCalendarId(id);
           console.log("calendar_id"+id);
           axios.get(`/api/location/${id}/`).then(response_ => {
-            console.log(response_.data);
             const {geometry} = response_.data;
             const {coordinates} = geometry;
             coordinates.map((v,i)=>{
@@ -69,45 +60,14 @@ const MapDisplay = ({navigation,route}) => {
         }
       })
       .catch(error => {console.log(error); console.log("outer error");setLatlngs([{latitude: 35.249245, longitude: 139.686818}]);});
-      // const timer = setTimeout(()=>onForegroundLocation(calendarid), 60 * 1000);
-
-      // return () => clearTimeout(timer);
   
     }, []);
     useEffect(() => {
-      // console.log("mapref")
-      // console.log(mapRef.current);
       if( latlngs != null && latlngs.length > 0){
         mapRef.current.animateToRegion(latlngs[0], 1 * 1000);
       }
     }, [latlngs, mapRef]);
 
-  let getPhotos = () => {
-    let from = new Date(route.params.date);
-    let to = new Date(route.params.date);
-    from.setHours(from.getHours()-9);
-    to.setHours(to.getHours()+15);
-    console.log("from"+from.toLocaleString())
-    console.log("to"+to.toLocaleString())
-    CameraRoll.getPhotos({
-      first: 10,
-      assetType: 'Photos',
-      groupTypes : 'All',
-      fromTime:  from.valueOf(),
-      toTime: to.valueOf(),     
-    })
-    .then(r => {
-      console.log(r.edges.filter((v) => {return v.node.hasOwnProperty("location") && v.node.location != null && v != undefined}));
-      let temp_photos = r.edges.filter((v) => {return v.node.hasOwnProperty("location") && v.node.location != null && v != undefined});
-      setPhotos(temp_photos);
-      groupByDistance(temp_photos);
-      console.log("group"+group);
-    })
-    .catch((err) => {
-       //Error Loading Images
-       console.log("error"+err);
-    });
-  };
 
   const onZoomInPress = () => {
     mapRef.current.getCamera().then((cam) => {
@@ -116,34 +76,6 @@ const MapDisplay = ({navigation,route}) => {
     });
 };
 
-  const groupByDistance = (temp_photos) => {
-    let newGroup = [[temp_photos[0]]];
-    // setGroup([[photos[0]]]);//1番はじめの画像をgroupに追加
-    for (let i = 1; i < temp_photos.length; i++) {
-      let j = 0;
-      while(j < newGroup.length){
-        // console.log("newGroup"+JSON.stringify(newGroup));
-        // console.log(i,j,newGroup.length);
-        if (getDistance(temp_photos[i].node.location.latitude,temp_photos[i].node.location.longitude,newGroup[j][0].node.location.latitude,newGroup[j][0].node.location.longitude) < 0.0004){//photosのi番目がgroupのj番目に含まれていたら、
-          newGroup = newGroup.map((v,index) => (index == j ? v.concat([[temp_photos[i]]]): v));
-          // setGroup(group.map((v,index) => (index == j ? v.concat([temp_photos[i]]): v)));
-          break;
-        }else if(j+1 == newGroup.length){
-          newGroup = newGroup.concat([[temp_photos[i]]]);
-          break;
-          // setGroup(prevGroup=>[...prevGroup, [temp_photos[i]]]);
-        }
-        j++;
-      }
-    }
-    // console.log("newGroup"+JSON.stringify(newGroup));
-    setGroup(newGroup);
-  }     
-
-  const getDistance = (lat1,lon1,lat2,lon2) =>{
-    return Math.sqrt( Math.pow( lat2-lat1, 2 ) + Math.pow( lon2-lon1, 2 ) ) ;
-  }
-    
           return (
             <View style={{flex:1}}>
               <MapView
@@ -171,7 +103,7 @@ const MapDisplay = ({navigation,route}) => {
                     console.log("date"+g[0].node.timestamp*1000);
                   return (
                     <React.Fragment key={i}>
-                      <Marker title={g.length.toString()} description={g.length.toString()}coordinate={{latitude:g[0].node.location.latitude, longitude:g[0].node.location.longitude}} onPress={()=>{navigation.navigate('MapModal',{user:user.params.user,date:route.params.date,images:g,theme_color:route.params.theme_color})}}>
+                      <Marker title={g.length.toString()} description={g.length.toString()}coordinate={{latitude:g[0].node.location.latitude, longitude:g[0].node.location.longitude}} onPress={()=>{navigation.navigate('MapModal',{user:route.params.user,date:route.params.date,images:g,theme_color:route.params.theme_color})}}>
                       <Image  style={{ width: 50, height: 50, }} resizeMode="contain" 
                       source={{ uri: g[0].node.image.uri }}/>
                       </Marker>
@@ -201,7 +133,8 @@ const MapDisplay = ({navigation,route}) => {
                 
               </MapView>
               <View style={{position : 'absolute', right : '0%'}}>
-              <Text>{photos.length}</Text>
+                <Icon name="arrow-with-circle-left" size={35} style={{top:"15%",right:"140%",fontFamily:'TrebuchetMS-Bold', color:((route.params.theme_color == 0) ? 'gray'  : (route.params.theme_color == 1) ? 'gainsboro' : 'lightpink')}} onPress={()=>{navigation.navigate("Drawer", { screen: "Calendar" ,user: route.params.user, date: route.params.date, theme_color:route.params.theme_color});}}/>
+                <Text>{photos.length}</Text>
                 <Button onPress={() => {mapRef.current.animateToRegion(markers.latlng, 1 * 1000);}} title="現在地へ" />
                 <Button onPress={() => {ZoomIn();}} title="ズームイン" />
                 <Button onPress={() => {ZoomOut();}} title="ズームアウト" />

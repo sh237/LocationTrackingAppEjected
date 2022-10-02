@@ -1,11 +1,8 @@
-import React , { Component,useState, useEffect,useRoute,useRef, useInsertionEffect } from 'react';
+import React , { Component,useState, useEffect,useContext,useRef, useInsertionEffect } from 'react';
 import { StyleSheet, Text, View ,Image, Button, Alert, Dimensions, Modal} from 'react-native';
 import MapView, { Marker, Polyline} from 'react-native-maps';
 import {CameraRoll }from '@react-native-camera-roll/camera-roll';
-import BackgroundGeolocation from "react-native-background-geolocation";
-import Geolocation from 'react-native-geolocation-service';
-import onForegroundLocation from '../function/onForegroundLocation';
-
+import { ImageContext } from '../navigation/index';
 import axios from 'axios';
 // import Exif from 'react-native-exif';
 
@@ -16,7 +13,7 @@ const TodayMapDisplay = ({navigation,route}) => {
     // let [proba, setProba] = useState(0);
     let [latlngs, setLatlngs] = useState([]);
     let [photos, setPhotos] = useState({});
-    let [group, setGroup] = useState([]);
+    let {group, setGroup} = useContext(ImageContext);
     let [imgmodal, setImgModal] = useState(false);
     let [selectedimg, setSelectedImg] = useState([]);
     let [calendarid, setCalendarId] = useState(0);

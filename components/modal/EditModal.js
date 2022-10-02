@@ -3,7 +3,6 @@ import React,{useEffect,useState} from 'react'
 import { View, Text ,Button,TextInput} from 'react-native';
 import {StyleSheet} from 'react-native';
 import Icon from 'react-native-vector-icons/AntDesign';
-import onForegroundLocation from '../function/onForegroundLocation';
 
 const EditModal = ({navigation, route}) => {
     const [title, setTitle] = useState(route.params.title);
@@ -58,6 +57,122 @@ const EditModal = ({navigation, route}) => {
     }
     };
 
+    
+    const styles = StyleSheet.create({
+        parent:{
+            flex:1, 
+            alignItems: 
+            'center', 
+            justifyContent: 'center' },
+            // backgroundColor:((route.params.theme_color == 0) ? 'white'  : (route.params.theme_color == 1) ? '#292929' : 'white')
+            // ,
+        screen1: {
+            width:"85%",
+            height:"60%", 
+            backgroundColor:"white",
+            alignItems:"center",
+            justifyContent:"center",
+            backgroundColor:((route.params.theme_color == 0) ? 'white'  : (route.params.theme_color == 1) ? '#292929' : 'lightpink')
+        },
+        screen2 : {
+            width:"80%",
+            height:"25%", 
+            backgroundColor:"white",
+            alignItems:"center",
+            justifyContent:"center",
+            backgroundColor:((route.params.theme_color == 0) ? 'white'  : (route.params.theme_color == 1) ? '#404040' : 'lightpink')
+        },
+        textinput1:{
+            height:"70%",
+            width:"90%",
+            borderColor:((route.params.theme_color == 0) ? 'black'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white'),
+            borderWidth:2,
+            borderRadius:6,
+            fontSize:20,
+            fontFamily: 'TrebuchetMS-Bold',
+            color:((route.params.theme_color == 0) ? 'white'  : (route.params.theme_color == 1) ? 'gainsboro' : 'lightpink'),
+            backgroundColor:((route.params.theme_color == 0) ? 'white'  : (route.params.theme_color == 1) ? '#404040' : 'white')
+        },
+        textinput2:{
+            height:"30%",
+            width:"90%",
+            borderColor:((route.params.theme_color == 0) ? 'black'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white'),
+            borderWidth:2,
+            borderRadius:6,
+            fontSize:20,
+            fontFamily: 'TrebuchetMS-Bold',
+            color:((route.params.theme_color == 0) ? 'white'  : (route.params.theme_color == 1) ? 'gainsboro' : 'lightpink'),
+            backgroundColor:((route.params.theme_color == 0) ? 'white'  : (route.params.theme_color == 1) ? '#404040' : 'white')
+        },
+        shadow: {
+            width: 40,
+            height: 23,
+          alignSelf: "center",
+          backgroundColor: "gray",
+         shadowColor: "black",
+         shadowOffset: {
+           height: -2,
+            width: -3
+          },
+          shadowRadius: 2,
+          shadowOpacity: 0.6,
+          marginTop: 70,
+          borderRadius: 5,
+          botton: 15,
+        },
+        icon1:{
+            bottom:36,
+            left: 152,
+            color:((route.params.theme_color == 0) ? 'black'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white'),
+        },
+        icon2: {
+            bottom:36,
+            left: 142,
+            color:((route.params.theme_color == 0) ? 'black'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white'),
+    
+        },
+        button1: {
+            paddingTop: 2,
+            top: 30,
+            width: 45,
+            height: 28,
+            color: ((route.params.theme_color == 0) ? 'black'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white'),
+            fontcolor: "black",
+            fontSize: 20,
+            fontFamily: 'TrebuchetMS-Bold',
+            borderRadius: 5,
+            borderWidth: 2,
+            borderColor: ((route.params.theme_color == 0) ? 'black'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white'),
+        },
+        button2: {
+            paddingTop: 2,
+            top: 30,
+            width: 45,
+            height: 28,
+            color: ((route.params.theme_color == 0) ? 'black'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white'),
+            fontcolor: "black",
+            fontSize: 20,
+            fontFamily: 'TrebuchetMS-Bold',
+            borderRadius: 5,
+            borderWidth: 2,
+            borderColor: ((route.params.theme_color == 0) ? 'black'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white'),
+        },
+        text1: {
+            bottom: 30,
+            fontcolor: "black",
+            color: ((route.params.theme_color == 0) ? 'black'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white'),
+            fontSize: 20,
+            fontFamily: 'TrebuchetMS-Bold',
+        },
+        text2: {
+            bottom: 30,
+            fontcolor: "black",
+            color: ((route.params.theme_color == 0) ? 'black'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white'),
+            fontSize: 20,
+            fontFamily: 'TrebuchetMS-Bold',
+        }
+    });
+
 
     useEffect(() => {
     console.log(title);
@@ -90,105 +205,4 @@ const EditModal = ({navigation, route}) => {
     </View>
     )
 }
-const styles = StyleSheet.create({
-    parent:{
-        flex:1, 
-        alignItems: 
-        'center', 
-        justifyContent: 'center' }
-        ,
-    screen1: {
-        width:"85%",
-        height:"60%", 
-        backgroundColor:"white",
-        alignItems:"center",
-        justifyContent:"center"
-    },
-    screen2 : {
-        width:"80%",
-        height:"25%", 
-        backgroundColor:"white",
-        alignItems:"center",
-        justifyContent:"center",
-    },
-    textinput1:{
-        height:"70%",
-        width:"90%",
-        borderColor:"black",
-        borderWidth:2,
-        borderRadius:6,
-        fontSize:20,
-        fontFamily: 'TrebuchetMS-Bold',
-    },
-    textinput2:{
-        height:"30%",
-        width:"90%",
-        borderColor:"black",
-        borderWidth:2,
-        borderRadius:6,
-        fontSize:20,
-        fontFamily: 'TrebuchetMS-Bold',
-    },
-    shadow: {
-        width: 40,
-        height: 23,
-      alignSelf: "center",
-      backgroundColor: "gray",
-     shadowColor: "black",
-     shadowOffset: {
-       height: -2,
-        width: -3
-      },
-      shadowRadius: 2,
-      shadowOpacity: 0.6,
-      marginTop: 70,
-      borderRadius: 5,
-      botton: 15,
-    },
-    icon1:{
-        bottom:36,
-        left: 152,
-    },
-    icon2: {
-        bottom:36,
-        left: 142,
-
-    },
-    button1: {
-        paddingTop: 2,
-        top: 30,
-        width: 45,
-        height: 28,
-        color: "black",
-        fontcolor: "black",
-        fontSize: 20,
-        fontFamily: 'TrebuchetMS-Bold',
-        borderRadius: 5,
-        borderWidth: 2,
-    },
-    button2: {
-        paddingTop: 2,
-        top: 30,
-        width: 45,
-        height: 28,
-        color: "black",
-        fontcolor: "black",
-        fontSize: 20,
-        fontFamily: 'TrebuchetMS-Bold',
-        borderRadius: 5,
-        borderWidth: 2,
-    },
-    text1: {
-        bottom: 30,
-        fontcolor: "black",
-        fontSize: 20,
-        fontFamily: 'TrebuchetMS-Bold',
-    },
-    text2: {
-        bottom: 30,
-        fontcolor: "black",
-        fontSize: 20,
-        fontFamily: 'TrebuchetMS-Bold',
-    }
-});
 export default EditModal

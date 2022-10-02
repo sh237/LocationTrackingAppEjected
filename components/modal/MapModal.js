@@ -1,6 +1,5 @@
-import React from 'react'
-import { View, Text ,Button,Image} from 'react-native';
-import onForegroundLocation from '../function/onForegroundLocation';
+import React,{useEffect, useContext} from 'react'
+import { View, Text ,Button,Image, ScrollView} from 'react-native';
 
 const MapModal = ({navigation,route}) => {
     useEffect(() => {
@@ -9,9 +8,7 @@ const MapModal = ({navigation,route}) => {
         // return () => clearTimeout(timer);
     },[]);
     return (
-                <View
-                    style={{ flex:1, alignItems: 'center', justifyContent: 'center' }}
-                >
+                <ScrollView contentContainerStyle={{ flex:1, alignItems: 'center', justifyContent: 'center' }}>
                     <Text>Modal Area</Text>
                     <Button onPress={()=>navigation.goBack()} title="戻る"></Button>
                     {console.log("images:"+route.params.images)}
@@ -19,11 +16,11 @@ const MapModal = ({navigation,route}) => {
                         return (
                             <React.Fragment key={i}>
                               <Image  style={{ width: 200, height: 200, }} resizeMode="contain" 
-                              source={{ uri: v.node.image.uri }}/>
+                              source={{ uri: v.node.image.uri }}/>{console.log("uri:"+v.node.image.uri)}
                               </React.Fragment>
                             );
                     })}
-                </View>
+                </ScrollView>
     );
 };
 

@@ -1,5 +1,5 @@
 import React,{useEffect, useState} from 'react'
-import {View,Text, Button,StyleSheet} from 'react-native';
+import {View,Image, Button,StyleSheet,Text} from 'react-native';
 import CheckBox from '@react-native-community/checkbox';
 import axios from 'axios';
 
@@ -27,25 +27,62 @@ const ColorSettingsDisplay = ({navigation,route}) => {
     arr[route.params.theme_color] = true;
     setSelection(arr);
     },[]);
+
+
+  const styles = StyleSheet.create({
+    screen: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: (route.params.theme_color == 0) ? '#fff'  : (route.params.theme_color == 1) ? '#292929' : 'mistyrose', 
+    }
+      ,
+    checkbox1:{
+      marginTop:"100%",
+      marginLeft:"10%",
+    },
+    checkbox2:{
+      marginTop:"100%",
+      marginLeft:"10%",
+    },
+    checkbox3:{
+      marginTop:"100%",
+      marginLeft:"10%",
+    },
+    button:{
+      borderRadius: 5,
+      borderWidth: 4,
+      color: 'lightpink',
+      borderColor: ((route.params.theme_color == 0) ? 'black'  : (route.params.theme_color == 1) ? 'white' : 'white'),
+    },
+  });
+
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <View style={{flexDirection:"row"}}>
-      
-      <CheckBox
+    <View style={styles.screen}>
+      <View style={{flex:1,flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+        <View style={{flexDirection:"row",paddingBottom:"5%"}}>
+        <Image style={{width: 200, height: 200}} source={require('./assets/default.png')}/>
+        <CheckBox
           value={isSelected[0]}
           onValueChange={(value)=>{setSelection(isSelected.map((selected, index) => (index === 0 ? value : false)))}}
           // style={styles.checkbox}
           disabled={checkDisabled(0)}
           style={styles.checkbox1}
         />
-      <CheckBox
+        </View>
+        <View style={{flexDirection:"row",paddingBottom:"5%"}}>
+        <Image style={{width: 200, height: 200}} source={require('./assets/black.png')}/>
+        <CheckBox
           value={isSelected[1]}
           onValueChange={(value)=>{setSelection(isSelected.map((selected, index) => (index === 1 ? value : false)))}}
           // style={styles.checkbox}
           disabled={checkDisabled(1)}
           style={styles.checkbox2}
         />
-      <CheckBox
+        </View>
+        <View style={{flexDirection:"row",paddingBottom:"5%"}}>
+        <Image style={{width: 200, height: 200}} source={require('./assets/pink.png')}/>
+        <CheckBox
           value={isSelected[2]}
           onValueChange={(value)=>{setSelection(isSelected.map((selected, index) => (index === 2 ? value : false)))}}
           // style={styles.checkbox}
@@ -53,24 +90,14 @@ const ColorSettingsDisplay = ({navigation,route}) => {
           style={styles.checkbox3}
         />
         </View>
-        <View style={{flexDirection:"row"}}>
-          <Button title="更新" onPress={()=>{Submit()}}></Button>
+        <View style={{flexDirection:"row",paddingBottom:"5%"}}>
+          <Button title="更新" style={styles.button} onPress={()=>{Submit()}}></Button>
         </View>
+      </View>
     </View>
   )
 }
 
-const styles = StyleSheet.create({
-  checkbox1:{
-    right:"250%"
-  },
-  checkbox2:{
-    
-  },
-  checkbox3:{
-    left:"250%"
-  },
-});
 
 
 export default ColorSettingsDisplay

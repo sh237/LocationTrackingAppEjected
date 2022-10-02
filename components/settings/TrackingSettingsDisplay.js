@@ -1,5 +1,5 @@
 import React,{useEffect, useState,useContext} from 'react'
-import {View, Button,StyleSheet,Switch} from 'react-native';
+import {View, StyleSheet,Text,Switch} from 'react-native';
 import {OnLocationContext} from '../navigation/DrawerNavigation'
 import BackgroundGeolocation from "react-native-background-geolocation";
 import CheckBox from '@react-native-community/checkbox';
@@ -11,10 +11,13 @@ const TrackingSettingsDisplay = ({navigation,route}) => {
   const [stop, setStop] = useState(null);
   const [isEnabled, setIsEnabled] = useState(false);
   const {subscription, setSubscription } = useContext(OnLocationContext);
+  const {calendarid, setCalendarid} = useContext(OnLocationContext);
 
   const toggleSwitch = (value) => {
     console.log(value)
     setIsEnabled(previousState => !previousState)
+    console.log("subscription")
+    console.log(subscription)
     let payload;
     if(value){
       payload = {id:route.params.user, is_tracking:value}
@@ -23,13 +26,14 @@ const TrackingSettingsDisplay = ({navigation,route}) => {
       payload = {id:route.params.user, is_tracking:value}
       stopOnLocation();
     }
-    console.log(payload)
+    console.log("subscription")
+    console.log(subscription)
     axios.patch(`/auth/update/is_tracking`,payload).then(response => {
     }).catch(error => console.log("error"))
   };
   const stopOnLocation = () =>{
     console.log("stopOnLocation");
-    if(subscription!= null){
+    if(subscription != null){
       subscription["remove"]();
       setSubscription(null);
     }
@@ -61,15 +65,28 @@ const TrackingSettingsDisplay = ({navigation,route}) => {
     setIsEnabled(route.params.is_tracking);
     },[]);
 
+  const styles = StyleSheet.create({
+    screen: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: (route.params.theme_color == 0) ? '#fff'  : (route.params.theme_color == 1) ? '#292929' : 'mistyrose', 
+    }
+  });
+  
+
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+    <View style={styles.screen}>
+      <View style={{flexDirection:"row",justifyContent:"space-between",}}>
+        <Text style={{color: ((route.params.theme_color == 0) ? 'black'  : (route.params.theme_color == 1) ? 'white' : '#404040') , top:"1%",fontSize:20,fontFamily:'TrebuchetMS-Bold'} }>位置情報追跡オフ/オン：</Text>
           <Switch
-            trackColor={{ false: "#767577", true: "#81b0ff" }}
+            trackColor={{ false: "#767577", true: "black" }}
             thumbColor={isEnabled ? "#f5dd4b" : "#f4f3f4"}
             ios_backgroundColor="#3e3e3e"
             onValueChange={(value)=>toggleSwitch(value)}
             value={isEnabled}
           />
+        </View>
     </View>
   )
 }

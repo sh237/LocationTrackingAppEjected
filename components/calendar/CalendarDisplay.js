@@ -1,70 +1,40 @@
-import React,{useState, useEffect,useContext} from 'react'
+import React,{useState, useEffect,useContext, useLayoutEffect} from 'react'
 import {StyleSheet, View, Text, Button,TouchableOpacity,AppState} from 'react-native';
 import { Calendar,LocaleConfig } from 'react-native-calendars';
 import moment from "moment";
 import axios from 'axios';
-import {Moment} from 'moment';
 import {OnLocationContext} from '../navigation/DrawerNavigation';
 import Geolocation from 'react-native-geolocation-service';
 import BackgroundGeolocation from "react-native-background-geolocation";
-import onForegroundLocation from '../function/onForegroundLocation';
 import { LogBox } from 'react-native';
+import Icon from 'react-native-vector-icons/Entypo';
+import {ImageContext} from '../navigation/index';
+import {CameraRoll }from '@react-native-camera-roll/camera-roll';
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
+  'Sending `location` with no listeners registered.',
 ]);
 const INITIAL_DATE = moment().format("YYYY-MM-DD");
 
 const CalendarDisplay = ({navigation, route}) => {
     const [currentDate, setCurrentDate] = useState(moment());
     const [appState, setAppState] = useState(AppState.currentState);
-    const [calendarid, setCalendarid] = useState(0);
+    const {calendarid, setCalendarid} = useContext(OnLocationContext);
     const {subscription, setSubscription } = useContext(OnLocationContext);
-
-    // let subscription = null;
-    // const handleAppStateChange = (nextAppState) => {
-    //   // if(subscription != null){
-    //   //   subscription.remove();
-    //   //   setSubscription(null);
-    //   // }
-
-    //   console.log('app State: ' + appState+' next app State: '+nextAppState);
-    //   if (appState != nextAppState) {
-    //     if(nextAppState.match(/inactive|background/) && appState === 'active'){
-    //       console.log(
-    //         'App State: ' +
-    //         'App has come to the background!'
-    //       );
-    //       // alert(
-    //       //   'App State: ' +
-    //       //   'App has come to the background!'
-    //       // );
-    //       console.log("back"+subscription)
-    //       if(subscription == null){
-    //         subscription = BackgroundGeolocation.onLocation(onLocation, onError);
-    //       }
-    //     }
-    //     console.log("set")
-
-    //     // alert('App State: ' + nextAppState);
-    //     if (nextAppState === "active") {
-    //       console.log(
-    //         'App State: ' +
-    //         'App has come to the foreground!'
-    //       );
-    //       // if(subscription != null){
-    //       //   subscription.remove();
-    //         // setSubscription(null);
-    //       // }
-
-
-    //       console.log("fore"+subscription);
-    //     }
-    //     setAppState(nextAppState);
-    //   }
-    // };
+    const {group, setGroup} = useContext(ImageContext);
+    const [day, setDay] = useState(null);
+    useLayoutEffect(()=>{
+      loadDayData(moment().format("YYYY-MM"));
+    },[])
+    // useLayoutEffect(()=>{
+    //   console.lgo("")
+    //   console.log(currentDate.format("YYYY-MM"));
+    //   loadDayData(currentDate.format("YYYY-MM"));
+    // },[currentDate])
 
     useEffect(() => {
+      loadDayData(moment().format("YYYY-MM"));
       axios
       .get(`/api/calendar/${route.params.user}/?search=${new Date(new Date() -  new Date().getTimezoneOffset() * 60 * 1000).toISOString().split('T')[0]}`)
       .then(response => {
@@ -115,10 +85,11 @@ useEffect(() => {
         console.log("- Start success");
       });
   }});
-  const subscription = BackgroundGeolocation.onLocation(onLocation, onError);
-  setSubscription(subscription);
-  
-}
+  if(route.params.is_tracking){
+    const subscription = BackgroundGeolocation.onLocation(onLocation, onError);
+    setSubscription(subscription);
+  }
+  }
 }, [calendarid]);
 
 const stopOnLocation = () =>{
@@ -140,6 +111,35 @@ const startOnLocation = () =>{
   }
 }
 
+const loadDayData = (date) => {
+  // let date = moment().format("YYYY-MM");
+  axios.get(`/api/calendar/month?search=${date}`).then(response => {
+    let newdata = {};
+    response.data.map((item) => {
+      if(!(item.title == null && item.description == null)){
+      newdata[item.date] = {schedule:true};
+      }});
+      // setDay(newdata);
+      axios.get(`/api/location/month/${route.params.user}?search=${date}`).then(response => {
+        response.data.map((item) => {
+          if(newdata.hasOwnProperty(item.calendar.date)){
+            newdata[item.calendar.date] = {schedule:true, location:true};
+          }else{
+            newdata[item.calendar.date] = {location:true};
+          }
+        })
+        console.log("newdata")
+        console.log(newdata)
+        setDay(newdata);
+      })
+        
+      .catch(error => console.log("location error:::"+error));
+
+    }).catch(error => console.log("loadDayData:::"+error));
+  }
+
+
+
 
 
 const onLocation = (location) => {
@@ -154,9 +154,62 @@ const onLocation = (location) => {
   }
 
 
-const onError = (error) => {
-  console.warn('[location] ERROR -', error);
-}
+    const onError = (error) => {
+      console.warn('[location] ERROR -', error);
+    }
+
+    let getPhotos = (date) => {
+      let from = new Date(date);
+      let to = new Date(date);
+      from.setHours(from.getHours()-9);
+      to.setHours(to.getHours()+15);
+      // console.log("from"+from.toLocaleString())
+      // console.log("to"+to.toLocaleString())
+      CameraRoll.getPhotos({
+        first: 10,
+        assetType: 'Photos',
+        groupTypes : 'All',
+        fromTime:  from.valueOf(),
+        toTime: to.valueOf(),     
+      })
+      .then(r => {
+        let temp_photos = r.edges.filter((v) => {return v.node.hasOwnProperty("location") && v.node.location != null && v != undefined});
+        groupByDistance(temp_photos);
+        console.log("group"+group);
+      })
+      .catch((err) => {
+         //Error Loading Images
+         console.log("error"+err);
+      });
+    };
+
+    const groupByDistance = (temp_photos) => {
+      let newGroup = [[temp_photos[0]]];
+      // setGroup([[photos[0]]]);//1番はじめの画像をgroupに追加
+      for (let i = 1; i < temp_photos.length; i++) {
+        let j = 0;
+        while(j < newGroup.length){
+          // console.log("newGroup"+JSON.stringify(newGroup));
+          // console.log(i,j,newGroup.length);
+          if (getDistance(temp_photos[i].node.location.latitude,temp_photos[i].node.location.longitude,newGroup[j][0].node.location.latitude,newGroup[j][0].node.location.longitude) < 0.0004){//photosのi番目がgroupのj番目に含まれていたら、
+            newGroup = newGroup.map((v,index) => (index == j ? v.concat([[temp_photos[i]]]): v));
+            // setGroup(group.map((v,index) => (index == j ? v.concat([temp_photos[i]]): v)));
+            break;
+          }else if(j+1 == newGroup.length){
+            newGroup = newGroup.concat([[temp_photos[i]]]);
+            break;
+            // setGroup(prevGroup=>[...prevGroup, [temp_photos[i]]]);
+          }
+          j++;
+        }
+      }
+      // console.log("newGroup"+JSON.stringify(newGroup));
+      setGroup(newGroup);
+    }     
+  
+    const getDistance = (lat1,lon1,lat2,lon2) =>{
+      return Math.sqrt( Math.pow( lat2-lat1, 2 ) + Math.pow( lon2-lon1, 2 ) ) ;
+    }
 
 
     LocaleConfig.locales.jp = {
@@ -168,63 +221,35 @@ const onError = (error) => {
     LocaleConfig.defaultLocale = 'jp';
     const [selected, setSelected] = useState(INITIAL_DATE);
     const handleDayPress = (day) => {
-        setSelected(day.dateString);
+        let date = new Date(day.dateString).toISOString().split('T')[0];
+        setSelected(date);
+        getPhotos(date);
         console.log(new Date(day.dateString).toLocaleString());
         // navigation.navigate("Map",{date:new Date(day.dateString).toISOString().split('T')[0],user:route.params.user,email:route.params.email});
 
-        axios.get(`/api/calendar/${route.params.user}/?search=${day.dateString}`)
+        axios.get(`/api/calendar/${route.params.user}/?search=${date}`)
       .then(response => {
         const {title,description} = response.data;
         console.log("title:"+title+"description:"+description);
-        navigation.navigate("BottomTab", { screen: "Schedule" ,date:new Date(day.dateString).toISOString().split('T')[0],user:route.params.user,email:route.params.email, title:title, description:description,not_created:false,theme_color:route.params.theme_color});
+        navigation.navigate("BottomTab", { screen: "Schedule" ,date:date,user:route.params.user,email:route.params.email, title:title, description:description,not_created:false,theme_color:route.params.theme_color});
         // navigation.navigate("Schedule",{date:new Date(day.dateString).toISOString().split('T')[0],user:route.params.user,email:route.params.email, title:title, description:description,not_created:false});
       })
       .catch(error => { 
-        navigation.navigate("BottomTab", { screen: "Schedule" ,date:new Date(day.dateString).toISOString().split('T')[0],user:route.params.user,email:route.params.email, title:"", description:"", not_created:true,theme_color:route.params.theme_color});
+        navigation.navigate("BottomTab", { screen: "Schedule" ,date:date,user:route.params.user,email:route.params.email, title:"", description:"", not_created:true,theme_color:route.params.theme_color});
         // navigation.navigate("Schedule",{date:new Date(day.dateString).toISOString().split('T')[0],user:route.params.user,email:route.params.email, title:"", description:"", not_created:true});
       });
     }
-        
-    return(
-    <View style={styles.container}>
-      {console.log(navigation)}
-        <Calendar
-        monthFormat={"yyyy年 MM月"}
-        current={INITIAL_DATE}
-        markedDates={{
-          [selected]: {
-            selected: true,
-            disableTouchEvent: false,
-            selectedColor: 'red',
-            selectedTextColor: 'white'
-          }
-         }}
-        onPressArrowLeft={(subtractMonth) => {
-          subtractMonth();
-          setCurrentDate(currentDate.add(-1, 'month'));
-        }}
-        onPressArrowRight={(addMonth) => {
-          addMonth();
-          setCurrentDate(currentDate.add(1, 'month'));
-        }}
-        theme={theme}
-        style={styles.calendar}
-        onDayPress={handleDayPress}
-        dayComponent={({ date }) => {
-          return (
-            <TouchableOpacity onPress={() => {handleDayPress(date)}} style={styles.button}>
-              <Text style={dayTextStyle(date, currentDate).dayText}> {date.day}</Text>
-            </TouchableOpacity>
-          );
-        }}
-      />
-      {/* <Button onPress={()=>{stopOnLocation()}} title="止める"></Button>
-      <Button onPress={()=>{checkOnLocation()}} title="確認"></Button>
-      <Button onPress={()=>{startOnLocation()}} title="始める"></Button> */}
-  </View>
-);
-};
-const dayTextStyle = (date, currentDate) =>
+    const  _renderArrow = (direction) => {
+      if(direction === 'left') {
+          return <Icon name="arrow-with-circle-left" size={30} color={(route.params.theme_color == 0) ? '#fff'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white' }/>
+      } else {
+          return <Icon name="arrow-with-circle-right" size={30} color={(route.params.theme_color == 0) ? '#fff'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white' }/>
+      }
+  }
+
+
+
+  const dayTextStyle = (date, currentDate) =>
   StyleSheet.create({
     dayText: {
       fontFamily:"TrebuchetMS-Bold",
@@ -235,8 +260,8 @@ const dayTextStyle = (date, currentDate) =>
       paddingTop: 15,
       height: "100%",
       width: "100%",
-      backgroundColor: date.dateString === moment().format('YYYY-MM-DD') ? '#CCCCCC' : 'transparent',
-      color: date.month !== currentDate.month() + 1 ? 'gray' :  moment(date.dateString).days() === 0 ? 'red' : moment(date.dateString).days() === 6 ? 'blue' : 'black',
+      backgroundColor: date.dateString === moment().format('YYYY-MM-DD') ? ((route.params.theme_color == 0) ? '#CCCCCC'  : (route.params.theme_color == 1) ? '#8c8c8c' : 'white') : ((route.params.theme_color == 0) ? 'transparent'  : (route.params.theme_color == 1) ? '#404040' : 'mistyrose'),
+      color:  date.dateString == moment().format('YYYY-MM-DD') ?  ((route.params.theme_color == 0) ? 'snow'  : (route.params.theme_color == 1) ? 'black' : '#404040')   :      date.month !== currentDate.month() + 1 ? 'gray' :  moment(date.dateString).days() === 0 ? 'red' : moment(date.dateString).days() === 6 ? 'blue' : ((route.params.theme_color == 0) ? '#292929'  : (route.params.theme_color == 1) ? 'gainsboro' : '#505050'),
     },
   });
 
@@ -246,38 +271,50 @@ container: {
   flex: 1,
   justifyContent: 'center',
   alignItems: 'center',
+  backgroundColor:((route.params.theme_color == 0) ? 'snow'  : (route.params.theme_color == 1) ? '#292929' : 'mistyrose'),
 },
 calendar: {
   fontfamily:"TrebuchetMS-Bold",
   width: 370,
-  height: 470,
-  borderWidth: 1,
-  borderColor: 'gray',
+  height: 480,
+  borderWidth: 3,
+  borderColor: ((route.params.theme_color == 2) ? 'mistyrose': 'gray'),
   borderRadius: 10,
   bottom:50,
+  backgroundColor: ((route.params.theme_color == 0) ? 'snow'  : (route.params.theme_color == 1) ? '#404040' : 'lightpink'),
+
 },
 header: {
   fontFamily:"TrebuchetMS-Bold",
   fontSize: 100,
 },
+icon1:{
+  position: 'absolute',
+  top:"73%",
+},
+icon2:{
+  position: 'absolute',
+  left: 2,
+  top:"73%",
+}
 });
 
 theme = {
   'stylesheet.calendar.header': {
       header: {
         // override the default header style react-native-calendars/src/calendar/header/style.js
-        backgroundColor: 'gray', // set the backgroundColor for header
+        backgroundColor: (route.params.theme_color == 0) ? 'gray'  : (route.params.theme_color == 1) ? '#404040' : 'lightpink', // カレンダーのヘッダーの背景色
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingVertical: 15,
-        width: 370,
+        width: 366,
         right: 6,
         borderTopLeftRadius: 8,
         borderTopRightRadius: 8,
       },
       monthText: {
-        color: '#fff',
+        color: (route.params.theme_color == 0) ? 'white'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white', // カレンダーのヘッダーの文字色
         fontWeight: '700',
         fontSize: 20,
         fontFamily:"TrebuchetMS-Bold",
@@ -289,7 +326,7 @@ theme = {
         textAlign: 'center',
         fontSize: 18,
         bottom: 10,
-        color: 'gray',
+        color:  ((route.params.theme_color == 0) ? 'gray'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white'), // 曜日の文字色
         fontFamily:"TrebuchetMS-Bold",
       },
     },
@@ -308,7 +345,7 @@ theme = {
         fontfamily:"TrebuchetMS-Bold",
       },
       dayContainer: {
-        borderColor: '#f5f5f5',
+        borderColor: '#f5f5f5', // 日付の枠線の色
         borderWidth: 1,
         // backgroundColor: 'pink',
         flex:1,
@@ -316,5 +353,53 @@ theme = {
       },
     },
   }
+
+        
+    return(
+    <View style={styles.container}>
+      {console.log(navigation)}
+        <Calendar
+        monthFormat={"yyyy年 MM月"}
+        current={INITIAL_DATE}
+        renderArrow={_renderArrow}
+        onPressArrowLeft={(subtractMonth) => {
+          subtractMonth();
+          setCurrentDate(currentDate.add(-1, 'month'));
+        }}
+        onPressArrowRight={(addMonth) => {
+          addMonth();
+          setCurrentDate(currentDate.add(1, 'month'));
+        }}
+        onMonthChange={(month) => {
+          console.log("month");
+          console.log(month.dateString);
+          console.log(month.dateString.slice(0,8));
+          loadDayData(month.dateString.slice(0,8))
+        }}
+        theme={theme}
+        style={styles.calendar}
+        onDayPress={handleDayPress}
+        dayComponent={({ date }) => {
+          return (
+            <TouchableOpacity onPress={() => {handleDayPress(date)}} style={styles.container}>
+              <Text style={dayTextStyle(date, currentDate).dayText}> {date.day}</Text>
+              {/* <Icon name="arrow-with-circle-left" size={10} style={styles.icon1} /> */}
+              {day != null && console.log(day)}
+              {day != null && day.hasOwnProperty(date.dateString) && day[date.dateString]['schedule'] && 
+              <Icon name="brush" size={13} style={styles.icon1}  />}
+              {day != null && day.hasOwnProperty(date.dateString) && day[date.dateString]['location'] && 
+              <Icon name="location" size={13} style={styles.icon2} />}
+            </TouchableOpacity>
+          );
+        }}
+      />
+      {/* <Button onPress={()=>{stopOnLocation()}} title="止める"></Button>
+      <Button onPress={()=>{checkOnLocation()}} title="確認"></Button>
+      <Button onPress={()=>{startOnLocation()}} title="始める"></Button> */}
+  </View>
+);
+
+
+};
 
 export default CalendarDisplay

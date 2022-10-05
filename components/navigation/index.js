@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{useRef, useState,useEffect} from 'react';
 import { StyleSheet,TouchableOpacity,Text,Button,Animated } from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
 import {createStackNavigator} from '@react-navigation/stack';
@@ -8,6 +8,7 @@ import CalendarDisplay from '../calendar/CalendarDisplay';
 import WatchLocation from '../tracking/TrackingDisplay'
 import MapModal from '../modal/MapModal';
 import Login from '../authentication/Login';
+import PasswordChange from '../authentication/PasswordChange';
 import Register from '../authentication/Register';
 import Home from '../authentication/Home';
 import Icon from 'react-native-vector-icons/Entypo';
@@ -17,6 +18,7 @@ import EditModal from '../modal/EditModal';
 import BottomTabNavigator from './BottomTabNavigator';
 import SettingsDisplay from '../settings/ColorSettingsDisplay';
 import DrawerNavigator from './DrawerNavigation';
+import SendEmail from '../authentication/SendEmail';
 
 
 const RootStack = createStackNavigator();
@@ -49,11 +51,25 @@ const RootStackScreen = () => {
       restSpeedThreshold: 0.0001,
     },
   };
+
+  const linking = {
+    prefixes: ['lta://'],
+    config: {
+      screens: {
+        PasswordChange: 'password_change/:uid/:token',
+      }
+    },
+  };
+
   const [group, setGroup] = React.useState(null);
 
+
   return (
+    // <AuthProvider>
     <ImageContext.Provider value={{group, setGroup}}>
-    <NavigationContainer>
+    {/* <NavigationContainer> */}
+    <NavigationContainer linking={linking}  >
+    {/* <NavigationContainer initialState={initialState} ref={ref}  > */}
       <RootStack.Navigator screenOptions={({ navigation,route })=>({
           headerStyle: {
             backgroundColor: (route.params != undefined) ? ((route.params.theme_color == 0) ? 'gray'  : (route.params.theme_color == 1) ? '#404040' : 'lightpink') : 'white',
@@ -61,6 +77,8 @@ const RootStackScreen = () => {
           headerTintColor:(route.params != undefined) ? ((route.params.theme_color == 0) ? 'snow'  : (route.params.theme_color == 1) ? 'gainsboro' : 'lightpink') : 'white',
         })}>
         <RootStack.Screen name="Login" component={Login} screenOptions={{headerShown:false}}/>
+        <RootStack.Screen name="PasswordChange" component={PasswordChange} options={{headerShown:false}}/>
+        <RootStack.Screen name="SendEmail" component={SendEmail} options={{headerShown:false}}/>
 
         {/* <RootStack.Screen
          name="Calendar" component={CalendarDisplay} screenOptions={{ headerStyle: styles.header }}
@@ -178,6 +196,7 @@ const RootStackScreen = () => {
       </RootStack.Navigator>
     </NavigationContainer>
     </ImageContext.Provider>
+    // </AuthProvider>
   );
 };
 

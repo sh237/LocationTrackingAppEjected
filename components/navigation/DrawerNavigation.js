@@ -19,10 +19,22 @@ export const OnLocationContext = React.createContext({
 
 
 
+
 const DrawerNavigator = ({route}) => {
   const [subscription, setSubscription] = useState(null); 
   const [calendarid, setCalendarid] = useState(0);
-
+  function CustomDrawerContent(props) {
+    return (
+      <DrawerContentScrollView {...props}>
+        <DrawerItemList {...props} />
+        <DrawerItem
+          label="ログアウト"
+          onPress={() => props.navigation.navigate("Login")}
+          labelStyle={{color: (route.params.theme_color == 0) ? '#fff'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white'}}
+        />
+      </DrawerContentScrollView>
+    );
+  }
     return (
       <OnLocationContext.Provider value={{subscription, setSubscription, calendarid, setCalendarid}}>
         <Drawer.Navigator initialRouteName="Calendar" screenOptions={{
@@ -38,7 +50,7 @@ const DrawerNavigator = ({route}) => {
             color:((route.params.theme_color == 0) ? '#fff'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white'),
           }
 
-        }} >
+        }} drawerContent={props => <CustomDrawerContent {...props} />}>
 
             <Drawer.Screen name="Calendar" component={CalendarDisplay} 
             options={{

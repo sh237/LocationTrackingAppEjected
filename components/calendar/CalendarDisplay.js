@@ -128,8 +128,6 @@ const loadDayData = (date) => {
             newdata[item.calendar.date] = {location:true};
           }
         })
-        console.log("newdata")
-        console.log(newdata)
         setDay(newdata);
       })
         
@@ -291,11 +289,13 @@ header: {
 icon1:{
   position: 'absolute',
   top:"73%",
+  color:((route.params.theme_color == 0) ? 'black'  : (route.params.theme_color == 1) ? 'ivory' : 'black'),
 },
 icon2:{
   position: 'absolute',
   left: 2,
   top:"73%",
+  color:((route.params.theme_color == 0) ? 'black'  : (route.params.theme_color == 1) ? 'ivory' : 'black'),
 }
 });
 
@@ -371,9 +371,6 @@ theme = {
           setCurrentDate(currentDate.add(1, 'month'));
         }}
         onMonthChange={(month) => {
-          console.log("month");
-          console.log(month.dateString);
-          console.log(month.dateString.slice(0,8));
           loadDayData(month.dateString.slice(0,8))
         }}
         theme={theme}
@@ -383,8 +380,6 @@ theme = {
           return (
             <TouchableOpacity onPress={() => {handleDayPress(date)}} style={styles.container}>
               <Text style={dayTextStyle(date, currentDate).dayText}> {date.day}</Text>
-              {/* <Icon name="arrow-with-circle-left" size={10} style={styles.icon1} /> */}
-              {day != null && console.log(day)}
               {day != null && day.hasOwnProperty(date.dateString) && day[date.dateString]['schedule'] && 
               <Icon name="brush" size={13} style={styles.icon1}  />}
               {day != null && day.hasOwnProperty(date.dateString) && day[date.dateString]['location'] && 
@@ -396,6 +391,7 @@ theme = {
       {/* <Button onPress={()=>{stopOnLocation()}} title="止める"></Button>
       <Button onPress={()=>{checkOnLocation()}} title="確認"></Button>
       <Button onPress={()=>{startOnLocation()}} title="始める"></Button> */}
+      {/* <Button onPress={()=>{navigation.navigate("PasswordChange")}} title="パスワード変更"></Button>  */}
   </View>
 );
 

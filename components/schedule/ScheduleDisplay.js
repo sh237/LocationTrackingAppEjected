@@ -116,7 +116,7 @@ const ScheduleDisplay = ({navigation, route}) => {
       <Text style={styles.title_body}>{title}</Text>
         <Text style={styles.description}>説明 <Icon style={styles.icon2} name="edit" size={25} onPress={()=>navigation.navigate("EditModal",{user:route.params.user, date:route.params.date ,title:title,description:description, isMultiline:true, text:"説明",not_created:route.params.not_created,theme_color:route.params.theme_color})}/></Text>
       <Text style={styles.description_body}>{description }</Text>
-      {group[0][0] != undefined ?
+      {group != null && group.length > 0 && group[0][0] != undefined ?
       <Text style={styles.text}>写真枚数:{returnGroupLength()}</Text>
       : <Text style={styles.text}>写真枚数:0</Text>
       // && group.map((v_,i_)=>{

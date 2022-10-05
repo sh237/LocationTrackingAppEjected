@@ -1,5 +1,5 @@
 import React, { Component, useState,useEffect} from 'react';
-import { Button, View, Text, TextInput, StyleSheet } from 'react-native';
+import { Button, View, Text, TextInput, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { setGestureState } from 'react-native-reanimated/lib/reanimated2/NativeMethods';
 
@@ -55,17 +55,20 @@ const LoginOrCreateForm = (props) => {
           const {id, email, theme_color,is_tracking} = response.data;
           // props.navigation.navigate('Calendar', { user: id, email: email, theme_color:theme_color});
           props.navigation.navigate("Drawer", { screen: "Calendar" ,user: id, email: email, theme_color:theme_color, is_tracking:is_tracking});
-        }).catch(error => console.log(error));
+        }).catch(
+          error => {console.log(error);
+          }
+        );
         
       })
-      .catch(error => console.log(error));
+      .catch(error => {console.log(error);Alert.alert("メールアドレスかパスワードが間違っています");});
       
     
   }
 
 
   const renderCreateForm = () => {
-    const { fieldStyle, textInputStyle } = style;
+    const { fieldStyle, textInputStyle3 } = style;
     if (props.create) {
       return (
           <View style={fieldStyle}>
@@ -73,7 +76,7 @@ const LoginOrCreateForm = (props) => {
               placeholder="username"
               autoCorrect={false}
               onChangeText={(text)=>{onUsernameChange(text)}}
-              style={textInputStyle}
+              style={textInputStyle3}
             />
           </View>
       );
@@ -81,10 +84,19 @@ const LoginOrCreateForm = (props) => {
   }
 
   const renderButton=()=> {
-    const buttonText = props.create ? 'Create' : 'Login';
+    const buttonText = props.create ? '作成' : 'ログイン';
 
     return (
-      <Button title={buttonText} onPress={()=>{handleRequest()}}/>
+      <TouchableOpacity onPress={()=>{handleRequest()}} style={{alignItems:"center"}}>
+              {props.create ? 
+              <React.Fragment>
+              <Text style={{fontFamily:"TrebuchetMS-Bold",fontSize:14, borderWidth:1, backgroundColor:"dodgerblue",color:"#fff",borderRadius:3,overflow:true,width:"12%",height:"17%",bottom:"120%"}}> {buttonText}</Text>
+              <Text style={{fontFamily:"TrebuchetMS-Bold",fontSize:14, borderWidth:1, backgroundColor:"dodgerblue",color:"#fff",borderRadius:3,overflow:true,width:"10%",height:"17%",bottom:"100%"}} onPress={() => props.navigation.navigate("Login")}>戻る</Text>
+              </React.Fragment>
+
+              : <Text style={{fontFamily:"TrebuchetMS-Bold",fontSize:14, borderWidth:1, backgroundColor:"dodgerblue",color:"#fff",borderRadius:3,overflow:true,width:"19%",height:"23%",bottom:"160%"}}> {buttonText}</Text>
+              }
+      </TouchableOpacity>
     );
   }
 
@@ -94,14 +106,18 @@ const LoginOrCreateForm = (props) => {
     if (!props.create) {
       const { accountCreateTextStyle } = style;
       return (
-        <Text style={accountCreateTextStyle}>
-          Or 
-          {/* <Text style={{ color: 'blue' }} onPress={() => Actions.register()}> */}
-          <Text style={{ color: 'blue' }} onPress={() => props.navigation.navigate("Register")}>
-            {' Sign-up'}
-          </Text>
-        </Text>
+        <React.Fragment>
+        {/* <Text style={{fontFamily:"TrebuchetMS-Bold",fontSize:14,width:"100%",height:"40%",bottom:"30%",left:"40%"}}>もしくは</Text> */}
+          <TouchableOpacity onPress={() => props.navigation.navigate("Register")} style={{alignItems:"center"}}>
+              <Text style={{fontFamily:"TrebuchetMS-Bold",fontSize:14, borderWidth:1, backgroundColor:"dodgerblue",color:"#fff",borderRadius:3,overflow:true,width:"100%",height:"32%",bottom:"170%"}}>アカウント作成へ</Text>
+        </TouchableOpacity>
+          <TouchableOpacity onPress={() => {props.navigation.navigate("SendEmail")}} style={{alignItems:"center"}}>
+            <Text style={{fontFamily:"TrebuchetMS-Bold",fontSize:14, borderWidth:1, backgroundColor:"dodgerblue",color:"#fff",borderRadius:3,overflow:true,width:"10%",height:"32%",bottom:"150%"}} >パスワードを忘れた場合</Text>
+        </TouchableOpacity>
+       </React.Fragment>
       );
+    }else{
+
     }
   }
 
@@ -122,7 +138,7 @@ const LoginOrCreateForm = (props) => {
               autoCorrect={false}
               autoCapitalize="none"
               onChangeText={(text)=>{onEmailChange(text)}}
-              style={textInputStyle}
+              style={style.textInputStyle1}
             />
           </View>
           <View style={fieldStyle}>
@@ -132,7 +148,7 @@ const LoginOrCreateForm = (props) => {
               autoCorrect={false}
               placeholder="password"
               onChangeText={(text)=>{onPasswordChange(text)}}
-              style={textInputStyle}
+              style={style.textInputStyle2}
             />
           </View>
           {renderCreateForm()}
@@ -155,9 +171,22 @@ const style = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  textInputStyle: {
-    flex: 1,
-    padding: 15
+  textInputStyle1: {
+    padding: 15,
+    borderWidth:1,
+    width:"85%",
+  },
+  textInputStyle2: {
+    padding: 15,
+    borderWidth:1,
+    top: "5%",
+    width:"85%",
+  },
+  textInputStyle3: {
+    padding: 15,
+    borderWidth:1,
+    top:"10%",
+    width:"85%",
   },
   fieldStyle: {
     flexDirection: 'row',

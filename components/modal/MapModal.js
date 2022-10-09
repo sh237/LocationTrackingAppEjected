@@ -7,19 +7,22 @@ const MapModal = ({navigation,route}) => {
 
         // return () => clearTimeout(timer);
     },[]);
+    console.log("images:");
+    console.log(route.params.images);
     return (
-                <ScrollView contentContainerStyle={{ flex:1, alignItems: 'center', justifyContent: 'center' }}>
+                <ScrollView contentContainerStyle={{ flexGrow: 1, alignItems: 'center',paddingBottom:100 }} >
                     <Text>Modal Area</Text>
                     <Button onPress={()=>navigation.goBack()} title="戻る"></Button>
                     {console.log("images:"+route.params.images)}
                     {route.params.images && route.params.images.map((v,i)=>{
-                        return (
-                            <React.Fragment key={i}>
-                              <Image  style={{ width: 200, height: 200, }} resizeMode="contain" 
-                              source={{ uri: v.node.image.uri }}/>{console.log("uri:"+v.node.image.uri)}
-                              </React.Fragment>
-                            );
-                    })}
+                                return (
+                                    <React.Fragment key={i}>
+                                    <Image  style={{ width: 200, height: 200, }} resizeMode="contain" 
+                                    source={{ uri: v.node.image.uri }}/>{console.log("uri:"+v.node.image.uri)}
+                                    </React.Fragment>
+                                    );
+                                }
+                )}
                 </ScrollView>
     );
 };

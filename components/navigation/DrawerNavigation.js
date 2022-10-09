@@ -8,6 +8,7 @@ import {
 import CalendarDisplay from '../calendar/CalendarDisplay';
 import ColorSettingsDisplay from '../settings/ColorSettingsDisplay';
 import TrackingSettingsDisplay from '../settings/TrackingSettingsDisplay'
+import AddLatLongs from '../map/AddLatLongs';
 
 const Drawer = createDrawerNavigator();
 export const OnLocationContext = React.createContext({
@@ -73,6 +74,14 @@ const DrawerNavigator = ({route}) => {
               headerShown:true,
               headerTitle:"トラッキング設定",
               drawerLabel:"トラッキング設定"
+              // drawerPosition: 'right',
+            }}
+          initialParams={route.params}/>
+            <Drawer.Screen name="AddLatLongs" component={AddLatLongs} 
+            options={{
+              headerShown:true,
+              headerTitle:"写真の位置情報追加",
+              drawerLabel:"写真の位置情報追加"
               // drawerPosition: 'right',
             }}
           initialParams={route.params}/>

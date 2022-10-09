@@ -26,6 +26,10 @@ export const ImageContext = React.createContext({
   group: null,
   setGroup: () => undefined,
 });
+export const UriContext = React.createContext({
+  uri: null,
+  setUri: () => undefined,
+});
 
 const RootStackScreen = () => {
   const styles = StyleSheet.create({
@@ -62,11 +66,14 @@ const RootStackScreen = () => {
   };
 
   const [group, setGroup] = React.useState(null);
+  const [uri, setUri] = React.useState(null);
 
 
   return (
     // <AuthProvider>
+    
     <ImageContext.Provider value={{group, setGroup}}>
+    <UriContext.Provider value={{uri, setUri}}>
     {/* <NavigationContainer> */}
     <NavigationContainer linking={linking}  >
     {/* <NavigationContainer initialState={initialState} ref={ref}  > */}
@@ -195,6 +202,7 @@ const RootStackScreen = () => {
       </RootStack.Group>
       </RootStack.Navigator>
     </NavigationContainer>
+    </UriContext.Provider>
     </ImageContext.Provider>
     // </AuthProvider>
   );

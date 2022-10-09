@@ -101,6 +101,8 @@ const MapDisplay = ({navigation,route}) => {
                     // console.log("length"+group.length)
                     console.log("date"+new Date(g[0].node.timestamp*1000).toLocaleString());
                     console.log("date"+g[0].node.timestamp*1000);
+                    console.log("images")
+                    console.log(g);
                   return (
                     <React.Fragment key={i}>
                       <Marker title={g.length.toString()} description={g.length.toString()}coordinate={{latitude:g[0].node.location.latitude, longitude:g[0].node.location.longitude}} onPress={()=>{navigation.navigate('MapModal',{user:route.params.user,date:route.params.date,images:g,theme_color:route.params.theme_color})}}>

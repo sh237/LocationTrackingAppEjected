@@ -10,6 +10,7 @@ import { LogBox } from 'react-native';
 import Icon from 'react-native-vector-icons/Entypo';
 import {ImageContext} from '../navigation/index';
 import {CameraRoll }from '@react-native-camera-roll/camera-roll';
+Icon.loadFont();
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
@@ -190,18 +191,18 @@ const onLocation = (location) => {
           // console.log("newGroup"+JSON.stringify(newGroup));
           // console.log(i,j,newGroup.length);
           if (getDistance(temp_photos[i].node.location.latitude,temp_photos[i].node.location.longitude,newGroup[j][0].node.location.latitude,newGroup[j][0].node.location.longitude) < 0.0004){//photosのi番目がgroupのj番目に含まれていたら、
-            newGroup = newGroup.map((v,index) => (index == j ? v.concat([[temp_photos[i]]]): v));
+            newGroup = newGroup.map((v,index) => (index == j ? v.concat([temp_photos[i]]): v));
             // setGroup(group.map((v,index) => (index == j ? v.concat([temp_photos[i]]): v)));
             break;
           }else if(j+1 == newGroup.length){
-            newGroup = newGroup.concat([[temp_photos[i]]]);
+              newGroup = newGroup.concat([[temp_photos[i]]]);
             break;
             // setGroup(prevGroup=>[...prevGroup, [temp_photos[i]]]);
           }
           j++;
         }
       }
-      // console.log("newGroup"+JSON.stringify(newGroup));
+      console.log("newGroup"+JSON.stringify(newGroup));
       setGroup(newGroup);
     }     
   

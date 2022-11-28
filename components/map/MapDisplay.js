@@ -2,13 +2,15 @@ import React , { Component,useState, useEffect,useContext,useRef, useInsertionEf
 import { StyleSheet, Text, View ,Image, Button, Alert, Dimensions, Modal} from 'react-native';
 import MapView, { Marker, Polyline} from 'react-native-maps';
 import {CameraRoll }from '@react-native-camera-roll/camera-roll';
+import { ThemeColorContext } from '../navigation/index';
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/Entypo';
-import { ImageContext } from '../navigation/index';
+import {  ImageContext } from '../navigation/index';
 
 // import Exif from 'react-native-exif';
 
 const MapDisplay = ({navigation,route}) => {
+    const {theme_color, setThemeColor} = useContext(ThemeColorContext);
     const mapRef = useRef(null);
     // let [image, setImage] = useState('');
     let [markers, setMarkers] = useState({});
@@ -42,8 +44,14 @@ const MapDisplay = ({navigation,route}) => {
     }
 
     useEffect(() => {
+      console.log("group!!");
+      console.log(group);
+      // if(route.params.calendar_id == null || group == null|| group.length == 0 ){
+      //   console.log("alert");
+      //   Alert.alert("位置情報がありません");
+      //   navigation.goBack();
+      // }
       console.log("user:"+route.params.user+"date:"+route.params.date);
-
       axios
       .get(`/api/calendar/${route.params.user}/?search=${route.params.date}`)
       .then(response => {
@@ -59,12 +67,25 @@ const MapDisplay = ({navigation,route}) => {
             })}).catch(error => {console.log(error);console.log("inner error");});
         }
       })
-      .catch(error => {console.log(error); console.log("outer error");setLatlngs([{latitude: 35.249245, longitude: 139.686818}]);});
+      .catch(error => {console.log(error); console.log("outer error");setLatlngs(null);});
   
     }, []);
+
+    useEffect(() => {
+      if(group == null|| group.length == 0 ){
+        console.log("alert");
+        Alert.alert("位置情報がありません");
+        navigation.goBack();
+      }
+      if(mapRef != null && mapRef.current != null && group != null && group[0] != null && group[0][0] != null){
+        mapRef.current.animateToRegion({latitude:group[0][0].node.location.latitude,longitude:group[0][0].node.location.longitude, latitudeDelta: LATITUDE_DELTA, longitudeDelta: LONGITUDE_DELTA  }, 1 * 1000);
+      }
+
+    },[route.params]);
+
     useEffect(() => {
       if( latlngs != null && latlngs.length > 0){
-        mapRef.current.animateToRegion(latlngs[0], 1 * 1000);
+        mapRef.current.animateToRegion({latitude:latlngs[latlngs.length-1].latitude, longitude:latlngs[latlngs.length-1].longitude, latitudeDelta: LATITUDE_DELTA, longitudeDelta: LONGITUDE_DELTA}, 1 * 1000);
       }
     }, [latlngs, mapRef]);
 
@@ -78,25 +99,26 @@ const MapDisplay = ({navigation,route}) => {
 
           return (
             <View style={{flex:1}}>
+              
               <MapView
                   ref={mapRef}
                   style={{ flex: 1 }}
                   initialRegion={{
-                      latitude: 35.249245,
-                      longitude: 139.686818,
+                      // latitude: 35.249245,
+                      // longitude: 139.686818,
                       // latitude: latlngs[0].latitude,
                       // longitude: latlngs[0].longitude,
                       // latitude: markers.latlng.latitude,
                       // longitude: markers.latlng.longitude,
-                      latitudeDelta: 0.02, //小さくなるほどズーム
-                      longitudeDelta: 0.02,
+                      latitudeDelta: 0.01, //小さくなるほどズーム
+                      longitudeDelta: 0.01,
                   }
                 }
-                onRegionChangeComplete={region => {mapRef.current.getCamera().then((cam)=> {setAltitude(cam.altitude); }); }}
+                // onRegionChangeComplete={region => {mapRef.current.getCamera().then((cam)=> {setAltitude(cam.altitude); }); }}
                 // onPanDrag={()=> {mapRef.current.getCamera().then((cam)=> {setAltitude(cam.altitude); }); }}
               >
 
-                  {(group.length > 0 && group[0][0] != undefined) && group.map((g, i) => {
+                  {(group != null && group.length > 0 && group[0][0] != undefined) && group.map((g, i) => {
                     // console.log("groupp"+group);
                     // console.log("length"+group.length)
                     console.log("date"+new Date(g[0].node.timestamp*1000).toLocaleString());
@@ -105,48 +127,48 @@ const MapDisplay = ({navigation,route}) => {
                     console.log(g);
                   return (
                     <React.Fragment key={i}>
-                      <Marker title={g.length.toString()} description={g.length.toString()}coordinate={{latitude:g[0].node.location.latitude, longitude:g[0].node.location.longitude}} onPress={()=>{navigation.navigate('MapModal',{user:route.params.user,date:route.params.date,images:g,theme_color:route.params.theme_color})}}>
-                      <Image  style={{ width: 50, height: 50, }} resizeMode="contain" 
+                      <Marker title={g.length.toString()+"枚の写真"} coordinate={{latitude:g[0].node.location.latitude, longitude:g[0].node.location.longitude}} onPress={()=>{navigation.navigate('MapModal',{user:route.params.user,date:route.params.date,images:g,theme_color:theme_color})}}>
+                      <Image  style={{ width: 80, height: 80, }} resizeMode="contain" 
                       source={{ uri: g[0].node.image.uri }}/>
                       </Marker>
                       </React.Fragment>
                     );
                 })}
 
-                    <Marker 
+                    {/* <Marker 
                     coordinate={markers.latlng} 
                     title={markers.title} 
                     description={markers.description} 
                     onPress={(e) => {
                     e.stopPropagation();
-                    Alert.alert("マーカーを押したよ")}} >
+                    Alert.alert("マーカーを押したよ")}} > */}
                       {/* <Text> */}
                       {/* {marker.image && <Image source={{ uri: marker.image }} style={{ width: 100, height: 100 }} />} */}
                       {/* </Text> */}
-                    </Marker>
+                    {/* </Marker> */}
                   
-                  <Marker coordinate={{latitude: 35.249245,longitude: 139.686818}}>
+                  {/* <Marker coordinate={{latitude: 35.249245,longitude: 139.686818}}> */}
 
                   
                   {/* <Button title="Reload Screen" onPress={ReadPhotos} /> */}
                     {/* {markers.image && <Image source={{ uri: markers.image }} style={{ width: 100, height: 100 }} />} */}
-                  </Marker>
-                  {latlngs.length > 0 && <Polyline coordinates={latlngs} strokeColor="#000" strokeWidth={3} />}
+                  {/* </Marker> */}
+                  {latlngs != null && latlngs.length > 0 && <Polyline coordinates={latlngs} strokeColor="#000" strokeWidth={3} />}
                 
               </MapView>
               <View style={{position : 'absolute', right : '0%'}}>
-                <Icon name="arrow-with-circle-left" size={35} style={{top:"15%",right:"140%",fontFamily:'TrebuchetMS-Bold', color:((route.params.theme_color == 0) ? 'gray'  : (route.params.theme_color == 1) ? 'gainsboro' : 'lightpink')}} onPress={()=>{navigation.navigate("Drawer", { screen: "Calendar" ,user: route.params.user, date: route.params.date, theme_color:route.params.theme_color});}}/>
-                <Text>{photos.length}</Text>
+                <Icon name="arrow-with-circle-left" size={35} style={{top:"130%",right:"1000%",fontFamily:'TrebuchetMS-Bold', color:((theme_color == 0) ? 'gray'  : (theme_color == 1) ? 'gainsboro' : 'lightpink')}} onPress={()=>{navigation.navigate("Drawer", { screen: "Calendar" ,user: route.params.user, date: route.params.date, theme_color:theme_color});}}/>
+                {/* <Text>{photos.length}</Text>
                 <Button onPress={() => {mapRef.current.animateToRegion(markers.latlng, 1 * 1000);}} title="現在地へ" />
                 <Button onPress={() => {ZoomIn();}} title="ズームイン" />
                 <Button onPress={() => {ZoomOut();}} title="ズームアウト" />
-                {/* <Text>{latlngs.length}</Text> */}
+                <Text>{latlngs.length}</Text>
                 <Button title="Move to Calendar" onPress={() => {navigation.navigate('Calendar',{user:route.params.user, date:route.params.date,theme_color:route.params.theme_color});}}/>
                 <Button title="latlngsの確認" onPress={() => {console.log("latlngs"+JSON.stringify(latlngs));}}/>
                 <Button title="openModal" onPress={() => {openModal();}}/>
                 {selectedimg.length > 0 && <Button title="MapModal" onPress={() => {navigation.navigate('MapModal',{user:route.params.user, date:route.params.date,images:selectedimg,theme_color:route.params.theme_color})}}/>}
                 <Text>{route.params.date}</Text>
-                <Text>{altitude}</Text>
+                <Text>{altitude}</Text> */}
                 
               </View>
             </View>

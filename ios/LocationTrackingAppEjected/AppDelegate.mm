@@ -1,9 +1,9 @@
 #import "AppDelegate.h"
+#import <React/RCTLinkingManager.h>
 
 #import <React/RCTBridge.h>
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
-
 #import <React/RCTAppSetupUtils.h>
 
 #if RCT_NEW_ARCH_ENABLED
@@ -81,6 +81,8 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
 
   return initProps;
 }
+// possibility of delete
+// jsCodeLocation = [NSURL URLWithString:@"http://10.10.29.15:8000/index.ios.bundle?platform=ios&dev=true"];
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
 {
@@ -90,6 +92,11 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
   return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 #endif
 }
+
+
+
+
+
 
 #if RCT_NEW_ARCH_ENABLED
 
@@ -130,4 +137,10 @@ static NSString *const kRNConcurrentRoot = @"concurrentRoot";
 
 #endif
 
+- (BOOL)application:(UIApplication *)application
+   openURL:(NSURL *)url
+   options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
+{
+  return [RCTLinkingManager application:application openURL:url options:options];
+}
 @end

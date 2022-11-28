@@ -9,6 +9,8 @@ import CalendarDisplay from '../calendar/CalendarDisplay';
 import ColorSettingsDisplay from '../settings/ColorSettingsDisplay';
 import TrackingSettingsDisplay from '../settings/TrackingSettingsDisplay'
 import AddLatLongs from '../map/AddLatLongs';
+import { ThemeColorContext } from '../navigation/index';
+import Icon from 'react-native-vector-icons/Entypo';
 
 const Drawer = createDrawerNavigator();
 export const OnLocationContext = React.createContext({
@@ -22,6 +24,7 @@ export const OnLocationContext = React.createContext({
 
 
 const DrawerNavigator = ({route}) => {
+  const {theme_color, setThemeColor} = useContext(ThemeColorContext);
   const [subscription, setSubscription] = useState(null); 
   const [calendarid, setCalendarid] = useState(0);
   function CustomDrawerContent(props) {
@@ -31,7 +34,20 @@ const DrawerNavigator = ({route}) => {
         <DrawerItem
           label="ログアウト"
           onPress={() => props.navigation.navigate("Login")}
-          labelStyle={{color: (route.params.theme_color == 0) ? '#fff'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white'}}
+          icon={({ focused, color, size }) => 
+          // if(!focused){
+          //   color = (theme_color == 0) ? 'blue' : (theme_color == 1) ? 'red' : 'green';
+          // }
+          <Icon name="log-out" size={size} color={(focused) ? color : (theme_color == 0) ? '#fff' : (theme_color == 1) ? 'gainsboro' : 'white'} />
+        }
+          // options={{
+          //   drawerIcon: ({ focused, color, size }) => {
+          //     return (
+          //       <Icon name="home" size={size} color={color} />
+          //     );
+          //   },
+          // }}
+          labelStyle={{color: (theme_color == 0) ? '#fff'  : (theme_color == 1) ? 'gainsboro' : 'white'}}
         />
       </DrawerContentScrollView>
     );
@@ -41,15 +57,16 @@ const DrawerNavigator = ({route}) => {
         <Drawer.Navigator initialRouteName="Calendar" screenOptions={{
           headerShown: false,
           headerStyle: {
-            backgroundColor: (route.params.theme_color == 0) ? 'gray'  : (route.params.theme_color == 1) ? '#404040' : 'lightpink',
+            backgroundColor: (theme_color == 0) ? 'gray'  : (theme_color == 1) ? '#404040' : 'lightpink',
           },
-          headerTintColor: (route.params.theme_color == 0) ? 'snow'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white',
+          headerTintColor: (theme_color == 0) ? 'snow'  : (theme_color == 1) ? 'gainsboro' : 'white',
           drawerStyle: {
-            backgroundColor: (route.params.theme_color == 0) ? '#404040'  : (route.params.theme_color == 1) ? '#404040' : 'lightpink',
+            backgroundColor: (theme_color == 0) ? '#404040'  : (theme_color == 1) ? '#404040' : 'lightpink',
           },
           drawerLabelStyle: {
-            color:((route.params.theme_color == 0) ? '#fff'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white'),
-          }
+            color:((theme_color == 0) ? '#fff'  : (theme_color == 1) ? 'gainsboro' : 'white'),
+          },
+            
 
         }} drawerContent={props => <CustomDrawerContent {...props} />}>
 
@@ -57,7 +74,12 @@ const DrawerNavigator = ({route}) => {
             options={{
               headerShown:true,
               headerTitle:"カレンダー",
-              drawerLabel:"トップ"
+              drawerLabel:"トップ",
+              drawerIcon: ({ focused, color, size }) => {
+                return (
+                  <Icon name="home" size={size} color={(focused) ? color : (theme_color == 0) ? '#fff' : (theme_color == 1) ? 'gainsboro' : 'white'} />
+                );
+              },
               // drawerPosition: 'right',
             }}
           initialParams={route.params}/>
@@ -65,7 +87,12 @@ const DrawerNavigator = ({route}) => {
             options={{
               headerShown:true,
               headerTitle:"テーマカラー設定",
-              drawerLabel:"テーマカラー設定"
+              drawerLabel:"テーマカラー設定",
+              drawerIcon: ({ focused, color, size }) => {
+                return (
+                  <Icon name="colours" size={size} color={(focused) ? color : (theme_color == 0) ? '#fff' : (theme_color == 1) ? 'gainsboro' : 'white'} />
+                );
+              },
               // drawerPosition: 'right',
             }}
           initialParams={route.params}/>
@@ -73,7 +100,12 @@ const DrawerNavigator = ({route}) => {
             options={{
               headerShown:true,
               headerTitle:"トラッキング設定",
-              drawerLabel:"トラッキング設定"
+              drawerLabel:"トラッキング設定",
+              drawerIcon: ({ focused, color, size }) => {
+                return (
+                  <Icon name="location-pin" size={size} color={(focused) ? color : (theme_color == 0) ? '#fff' : (theme_color == 1) ? 'gainsboro' : 'white'} />
+                );
+              },
               // drawerPosition: 'right',
             }}
           initialParams={route.params}/>
@@ -81,7 +113,12 @@ const DrawerNavigator = ({route}) => {
             options={{
               headerShown:true,
               headerTitle:"写真の位置情報追加",
-              drawerLabel:"写真の位置情報追加"
+              drawerLabel:"写真の位置情報追加",
+              drawerIcon: ({ focused, color, size }) => {
+                return (
+                  <Icon name="camera" size={size} color={(focused) ? color : (theme_color == 0) ? '#fff' : (theme_color == 1) ? 'gainsboro' : 'white'} />
+                );
+              },
               // drawerPosition: 'right',
             }}
           initialParams={route.params}/>

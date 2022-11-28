@@ -1,9 +1,11 @@
-import React,{useEffect, useState} from 'react'
+import React,{useContext,useEffect, useState} from 'react'
 import {View,Image, Button,StyleSheet,Text} from 'react-native';
 import CheckBox from '@react-native-community/checkbox';
 import axios from 'axios';
+import { ThemeColorContext } from '../navigation/index';
 
 const ColorSettingsDisplay = ({navigation,route}) => {
+  const {theme_color, setThemeColor} = useContext(ThemeColorContext);
   const [isSelected, setSelection] = useState([false,false,false]);
 
   const checkDisabled = (id)=>{
@@ -12,11 +14,13 @@ const ColorSettingsDisplay = ({navigation,route}) => {
 
   const Submit = ()=>{
     console.log(route.params)
-    let theme_color = isSelected.indexOf(true);
+    let theme_color_ = isSelected.indexOf(true);
     console.log(theme_color)
-    if(theme_color != route.params.theme_color){
-      payload = {id:route.params.user, theme_color:theme_color}
+    if(theme_color_ != theme_color){
+      payload = {id:route.params.user, theme_color:theme_color_}
       axios.patch(`/auth/update/theme`,payload).then(response => {
+        setThemeColor(theme_color_);
+        // navigation.navigate("Drawer", { screen: "ColorSettingsDisplay" ,date:route.params.date,user:route.params.user,email:route.params.email, title:route.params.title, description:route.params.description, theme_color:theme_color});
       }).catch(error => console.log("error"))
     }
   //axios.put(`/auth/update/${id}`,{id:id}).then(response => {
@@ -24,7 +28,7 @@ const ColorSettingsDisplay = ({navigation,route}) => {
 
   useEffect(()=>{
     let arr = [false,false,false];
-    arr[route.params.theme_color] = true;
+    arr[theme_color] = true;
     setSelection(arr);
     },[]);
 
@@ -34,7 +38,7 @@ const ColorSettingsDisplay = ({navigation,route}) => {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: (route.params.theme_color == 0) ? '#fff'  : (route.params.theme_color == 1) ? '#292929' : 'mistyrose', 
+      backgroundColor: (theme_color == 0) ? '#fff'  : (theme_color == 1) ? '#292929' : 'mistyrose', 
     }
       ,
     checkbox1:{
@@ -53,7 +57,7 @@ const ColorSettingsDisplay = ({navigation,route}) => {
       borderRadius: 5,
       borderWidth: 4,
       color: 'lightpink',
-      borderColor: ((route.params.theme_color == 0) ? 'black'  : (route.params.theme_color == 1) ? 'white' : 'white'),
+      borderColor: ((theme_color == 0) ? 'black'  : (theme_color == 1) ? 'white' : 'white'),
     },
   });
 

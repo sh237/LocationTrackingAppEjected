@@ -1,17 +1,6 @@
 import React, {useState, useEffect} from 'react';
-// import Styled from 'styled-components/native';
 import {View,Text} from 'react-native';
 import Geolocation from 'react-native-geolocation-service';
-
-// const Container = Styled.View`
-//     flex: 1;
-//     justify-content: center;
-//     align-items: center;
-// `;
-
-// const Label = Styled.Text`
-//     font-size: 24px;
-// `;
 
 
 const WatchLocation = ({navigation}) => {

@@ -26,9 +26,13 @@ export const ImageContext = React.createContext({
   group: null,
   setGroup: () => undefined,
 });
-export const UriContext = React.createContext({
-  uri: null,
-  setUri: () => undefined,
+export const AddedPhotoContext = React.createContext({
+  addedPhoto: null,
+  setAddedPhoto: () => undefined,
+});
+export const ThemeColorContext = React.createContext({
+  theme_color: null,
+  setThemeColor: () => undefined,
 });
 
 const RootStackScreen = () => {
@@ -66,22 +70,24 @@ const RootStackScreen = () => {
   };
 
   const [group, setGroup] = React.useState(null);
-  const [uri, setUri] = React.useState(null);
+  const [addedPhoto, setAddedPhoto] = React.useState(null);
+  const [theme_color, setThemeColor] = React.useState(null);
 
 
   return (
     // <AuthProvider>
     
+    <ThemeColorContext.Provider value={{theme_color, setThemeColor}}>
     <ImageContext.Provider value={{group, setGroup}}>
-    <UriContext.Provider value={{uri, setUri}}>
+    <AddedPhotoContext.Provider value={{addedPhoto, setAddedPhoto}}>
     {/* <NavigationContainer> */}
     <NavigationContainer linking={linking}  >
     {/* <NavigationContainer initialState={initialState} ref={ref}  > */}
       <RootStack.Navigator screenOptions={({ navigation,route })=>({
           headerStyle: {
-            backgroundColor: (route.params != undefined) ? ((route.params.theme_color == 0) ? 'gray'  : (route.params.theme_color == 1) ? '#404040' : 'lightpink') : 'white',
+            backgroundColor: (route.params != undefined) ? ((theme_color == 0) ? 'gray'  : (theme_color == 1) ? '#404040' : 'lightpink') : 'white',
           },
-          headerTintColor:(route.params != undefined) ? ((route.params.theme_color == 0) ? 'snow'  : (route.params.theme_color == 1) ? 'gainsboro' : 'lightpink') : 'white',
+          headerTintColor:(route.params != undefined) ? ((theme_color == 0) ? 'snow'  : (theme_color == 1) ? 'gainsboro' : 'lightpink') : 'white',
         })}>
         <RootStack.Screen name="Login" component={Login} screenOptions={{headerShown:false}}/>
         <RootStack.Screen name="PasswordChange" component={PasswordChange} options={{headerShown:false}}/>
@@ -135,7 +141,7 @@ const RootStackScreen = () => {
                     headerShown:false,
                     // headerLeft: () => (
                     // <TouchableOpacity style={this.button}>
-                    //     <Text style={{fontFamily:'TrebuchetMS-Bold', color:((route.params.theme_color == 0) ? '#fff'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white')}} onPress={()=>{navigation.navigate("Drawer", { screen: "Calendar" ,user: route.params.user, date: route.params.date, theme_color:route.params.theme_color});}}>{"  < カレンダーに戻る"}</Text>
+                    //     <Text style={{fontFamily:'TrebuchetMS-Bold', color:((route.params.theme_color == 0) ? '#fff'  : (theme_color == 1) ? 'gainsboro' : 'white')}} onPress={()=>{navigation.navigate("Drawer", { screen: "Calendar" ,user: route.params.user, date: route.params.date, theme_color:route.params.theme_color});}}>{"  < カレンダーに戻る"}</Text>
                     // </TouchableOpacity>
                     // ),
                     
@@ -185,7 +191,7 @@ const RootStackScreen = () => {
           ({ navigation,route })=>({
             headerShown: true,
             headerLeft: (props) => (
-            <Button title="Calendar" onPress={()=>{navigation.navigate("Calendar",{user: route.params.user, date: route.params.date,theme_color:route.params.theme_color})}}>Calendar</Button>
+            <Button title="Calendar" onPress={()=>{navigation.navigate("Calendar",{user: route.params.user, date: route.params.date,theme_color:theme_color})}}>Calendar</Button>
           ),
         })}
       />
@@ -202,9 +208,9 @@ const RootStackScreen = () => {
       </RootStack.Group>
       </RootStack.Navigator>
     </NavigationContainer>
-    </UriContext.Provider>
+    </AddedPhotoContext.Provider >
     </ImageContext.Provider>
-    // </AuthProvider>
+    </ThemeColorContext.Provider>
   );
 };
 

@@ -1,10 +1,11 @@
-import React, { Component, useState,useEffect} from 'react';
+import React, { useContext, useState,useEffect} from 'react';
 import { Button, View, Text, TextInput, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import { setGestureState } from 'react-native-reanimated/lib/reanimated2/NativeMethods';
-
+import { ThemeColorContext } from '../../navigation/index';
 
 const LoginOrCreateForm = (props) => {
+  const {theme_color, setThemeColor} = useContext(ThemeColorContext);
     const [user, setUser] = useState({
         username: '',
         password: '',
@@ -54,6 +55,7 @@ const LoginOrCreateForm = (props) => {
         axios.get('/auth/myself').then(response => {
           const {id, email, theme_color,is_tracking} = response.data;
           // props.navigation.navigate('Calendar', { user: id, email: email, theme_color:theme_color});
+          setThemeColor(theme_color);
           props.navigation.navigate("Drawer", { screen: "Calendar" ,user: id, email: email, theme_color:theme_color, is_tracking:is_tracking});
         }).catch(
           error => {console.log(error);

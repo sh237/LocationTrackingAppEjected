@@ -17,7 +17,7 @@ const MapModal = ({navigation,route}) => {
                     {route.params.images && route.params.images.map((v,i)=>{
                                 return (
                                     <React.Fragment key={i}>
-                                    <Image  style={{ width: 200, height: 200, }} resizeMode="contain" 
+                                    <Image  style={{ width: 360, height: 400, }} resizeMode="contain" 
                                     source={{ uri: v.node.image.uri }}/>{console.log("uri:"+v.node.image.uri)}
                                     </React.Fragment>
                                     );

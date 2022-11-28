@@ -1,5 +1,5 @@
 import React,{useState, useEffect,useContext, useLayoutEffect} from 'react'
-import {StyleSheet, View, Text, Button,TouchableOpacity,AppState} from 'react-native';
+import {StyleSheet, View, Text, Linking,TouchableOpacity,AppState} from 'react-native';
 import { Calendar,LocaleConfig } from 'react-native-calendars';
 import moment from "moment";
 import axios from 'axios';
@@ -8,23 +8,82 @@ import Geolocation from 'react-native-geolocation-service';
 import BackgroundGeolocation from "react-native-background-geolocation";
 import { LogBox } from 'react-native';
 import Icon from 'react-native-vector-icons/Entypo';
-import {ImageContext} from '../navigation/index';
+import {ImageContext, AddedPhotoContext, ThemeColorContext} from '../navigation/index';
+import { loadImageFromUrl } from "react-native-jsi-image"
 import {CameraRoll }from '@react-native-camera-roll/camera-roll';
 Icon.loadFont();
 
 LogBox.ignoreLogs([
   'Non-serializable values were found in the navigation state',
   'Sending `location` with no listeners registered.',
+  'Sending `activitychange` with no listeners registered.',
 ]);
+
 const INITIAL_DATE = moment().format("YYYY-MM-DD");
 
 const CalendarDisplay = ({navigation, route}) => {
+    const {theme_color, setThemeColor} = useContext(ThemeColorContext);
     const [currentDate, setCurrentDate] = useState(moment());
     const [appState, setAppState] = useState(AppState.currentState);
     const {calendarid, setCalendarid} = useContext(OnLocationContext);
     const {subscription, setSubscription } = useContext(OnLocationContext);
     const {group, setGroup} = useContext(ImageContext);
+    const {addedPhoto, setAddedPhoto} = useContext(AddedPhotoContext);
     const [day, setDay] = useState(null);
+    const [{key, theme}, setTheme] = useState({key: theme_color, theme: {
+      'stylesheet.calendar.header': {
+        header: {
+          // override the default header style react-native-calendars/src/calendar/header/style.js
+          backgroundColor: (theme_color == 0) ? 'gray'  : (theme_color == 1) ? '#404040' : 'lightpink', // カレンダーのヘッダーの背景色
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          paddingVertical: 15,
+          width: 366,
+          right: 6,
+          borderTopLeftRadius: 8,
+          borderTopRightRadius: 8,
+        },
+        monthText: {
+          color: (theme_color == 0) ? 'white'  : (theme_color == 1) ? 'gainsboro' : 'white', // カレンダーのヘッダーの文字色
+          fontWeight: '700',
+          fontSize: 20,
+          fontFamily:"TrebuchetMS-Bold",
+        },
+        dayHeader: {
+          marginTop: 13,
+          // marginBottom: 7,
+          // width: 30,
+          textAlign: 'center',
+          fontSize: 18,
+          bottom: 10,
+          color:  ((theme_color == 0) ? 'gray'  : (theme_color == 1) ? 'gainsboro' : 'white'), // 曜日の文字色
+          fontFamily:"TrebuchetMS-Bold",
+        },
+      },
+      'stylesheet.calendar.main': {
+        monthView: {
+          flex: 1,
+          height: '100%',
+          justifyContent: 'space-around',
+          fontfamily:"TrebuchetMS-Bold",
+        },
+        week: {
+          flex: 1,
+          marginVertical: 0,
+          flexDirection: 'row',
+          justifyContent: 'space-around',
+          fontfamily:"TrebuchetMS-Bold",
+        },
+        dayContainer: {
+          borderColor: '#f5f5f5', // 日付の枠線の色
+          borderWidth: 1,
+          // backgroundColor: 'pink',
+          flex:1,
+          fontfamily:"TrebuchetMS-Bold",
+        },
+      }
+        }});
     useLayoutEffect(()=>{
       loadDayData(moment().format("YYYY-MM"));
     },[])
@@ -74,7 +133,7 @@ useEffect(() => {
     {enableHighAccuracy: false, timeout: 15000, maximumAge: 10000},
   );
   BackgroundGeolocation.ready({
-    distanceFilter: 500,
+    distanceFilter: 100,
     stopOnTerminate: false,
     startOnBoot: true, 
     logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
@@ -92,6 +151,65 @@ useEffect(() => {
   }
   }
 }, [calendarid]);
+
+useEffect(()=>{
+  // const routes = navigation.dangerouslyGetParent().state.routes;
+  setGroup(null);
+  setAddedPhoto(null);
+  console.log("inside navigation change")
+  setTheme({key: theme_color, theme: {
+  'stylesheet.calendar.header': {
+      header: {
+        // override the default header style react-native-calendars/src/calendar/header/style.js
+        backgroundColor: (theme_color == 0) ? 'gray'  : (theme_color == 1) ? '#404040' : 'lightpink', // カレンダーのヘッダーの背景色
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 15,
+        width: 366,
+        right: 6,
+        borderTopLeftRadius: 8,
+        borderTopRightRadius: 8,
+      },
+      monthText: {
+        color: (theme_color == 0) ? 'white'  : (theme_color == 1) ? 'gainsboro' : 'white', // カレンダーのヘッダーの文字色
+        fontWeight: '700',
+        fontSize: 20,
+        fontFamily:"TrebuchetMS-Bold",
+      },
+      dayHeader: {
+        marginTop: 13,
+        // marginBottom: 7,
+        // width: 30,
+        textAlign: 'center',
+        fontSize: 18,
+        bottom: 10,
+        color:  ((theme_color == 0) ? 'gray'  : (theme_color == 1) ? 'gainsboro' : 'white'), // 曜日の文字色
+        fontFamily:"TrebuchetMS-Bold",
+      },
+    },
+    'stylesheet.calendar.main': {
+      monthView: {
+        flex: 1,
+        height: '100%',
+        justifyContent: 'space-around',
+        fontfamily:"TrebuchetMS-Bold",
+      },
+      week: {
+        flex: 1,
+        marginVertical: 0,
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        fontfamily:"TrebuchetMS-Bold",
+      },
+      dayContainer: {
+        borderColor: '#f5f5f5', // 日付の枠線の色
+        borderWidth: 1,
+        // backgroundColor: 'pink',
+        flex:1,
+        fontfamily:"TrebuchetMS-Bold",
+      },
+    }}});},[route.params]);
 
 const stopOnLocation = () =>{
   console.log("stopOnLocation");
@@ -138,9 +256,6 @@ const loadDayData = (date) => {
   }
 
 
-
-
-
 const onLocation = (location) => {
   // console.log("latlngs"+latlngs);
   console.log("onlocation"+calendarid+location);
@@ -157,7 +272,7 @@ const onLocation = (location) => {
       console.warn('[location] ERROR -', error);
     }
 
-    let getPhotos = (date) => {
+    let getPhotos = async(date, calendarid_) => {
       let from = new Date(date);
       let to = new Date(date);
       from.setHours(from.getHours()-9);
@@ -165,16 +280,62 @@ const onLocation = (location) => {
       // console.log("from"+from.toLocaleString())
       // console.log("to"+to.toLocaleString())
       CameraRoll.getPhotos({
-        first: 10,
+        first: 30,
         assetType: 'Photos',
         groupTypes : 'All',
         fromTime:  from.valueOf(),
-        toTime: to.valueOf(),     
+        toTime: to.valueOf(),   
       })
-      .then(r => {
-        let temp_photos = r.edges.filter((v) => {return v.node.hasOwnProperty("location") && v.node.location != null && v != undefined});
-        groupByDistance(temp_photos);
-        console.log("group"+group);
+      .then(async(r) => {
+        let savedPhotos = [];
+        await axios.get(`/api/photo/list/${calendarid_}`).then(async(response) => {
+
+          console.log("response");
+          console.log(response.data );
+          await response.data.map((item) => {
+            savedPhotos.push({filename:item.filename, latitude:item.latitude, longitude:item.longitude});
+          })
+          console.log("PresavedPhotos");
+          console.log(savedPhotos);
+        }).catch(error => console.log("photo error:::"+error));
+        console.log("AfsavedPhotos");
+        console.log(savedPhotos);
+        // let temp_photos = r.edges.filter((v) => {
+        //   return v.node.hasOwnProperty("location") && v.node.location != null && v != undefined}
+        //   );
+        console.log("r.edges");
+        let addedPhoto = [];
+        let temp_photos = await r.edges.filter((v) => {
+          if  (v.node.hasOwnProperty("location") && v.node.location != null && v != undefined){
+            console.log("if")
+            return v;
+          }else{
+            console.log("else")
+            console.log(savedPhotos);
+            let temp;
+            if(savedPhotos.length > 0){
+            savedPhotos.map((item) => {
+              console.log(item.filename)
+              console.log(v.node.image.filename)
+              if("ph://"+item.filename == v.node.image.uri){
+                console.log("if2")
+                v.node.location = {latitude:item.latitude, longitude:item.longitude};
+                console.log(v);
+                temp = v;
+                addedPhoto.push(v);
+              }
+            });
+            return temp;
+       }}
+      });
+      setAddedPhoto(addedPhoto);
+      console.log("temp_photos");
+      console.log(temp_photos);
+      // Linking.openURL(temp_photos[0].node.image.uri);
+      // Linking.openURL("photos-redirect://");
+      groupByDistance(temp_photos);
+      console.log("group");
+      console.log(group);
       })
       .catch((err) => {
          //Error Loading Images
@@ -183,6 +344,12 @@ const onLocation = (location) => {
     };
 
     const groupByDistance = (temp_photos) => {
+      if(temp_photos.length == 0 || temp_photos == undefined){
+        setGroup(null);
+        console.log("stopped");
+        return;
+      }
+      
       let newGroup = [[temp_photos[0]]];
       // setGroup([[photos[0]]]);//1番はじめの画像をgroupに追加
       for (let i = 1; i < temp_photos.length; i++) {
@@ -221,28 +388,32 @@ const onLocation = (location) => {
     const [selected, setSelected] = useState(INITIAL_DATE);
     const handleDayPress = (day) => {
         let date = new Date(day.dateString).toISOString().split('T')[0];
-        setSelected(date);
-        getPhotos(date);
+        // setSelected(date);
+        // getPhotos(date);
         console.log(new Date(day.dateString).toLocaleString());
         // navigation.navigate("Map",{date:new Date(day.dateString).toISOString().split('T')[0],user:route.params.user,email:route.params.email});
 
-        axios.get(`/api/calendar/${route.params.user}/?search=${date}`)
+      axios.get(`/api/calendar/${route.params.user}/?search=${date}`)
       .then(response => {
-        const {title,description} = response.data;
+        const {title,id,description} = response.data;
+        // setSelected(date);
+        getPhotos(date,id);
         console.log("title:"+title+"description:"+description);
-        navigation.navigate("BottomTab", { screen: "Schedule" ,date:date,user:route.params.user,email:route.params.email, title:title, description:description,not_created:false,theme_color:route.params.theme_color});
+        navigation.navigate("BottomTab", { screen: "Schedule" ,date:date,user:route.params.user,email:route.params.email, title:title, description:description,not_created:false,theme_color:theme_color,calendar_id:id});
         // navigation.navigate("Schedule",{date:new Date(day.dateString).toISOString().split('T')[0],user:route.params.user,email:route.params.email, title:title, description:description,not_created:false});
       })
       .catch(error => { 
-        navigation.navigate("BottomTab", { screen: "Schedule" ,date:date,user:route.params.user,email:route.params.email, title:"", description:"", not_created:true,theme_color:route.params.theme_color});
+        // setSelected(date);
+        getPhotos(date,null);
+        navigation.navigate("BottomTab", { screen: "Schedule" ,date:date,user:route.params.user,email:route.params.email, title:"", description:"", not_created:true,theme_color:theme_color});
         // navigation.navigate("Schedule",{date:new Date(day.dateString).toISOString().split('T')[0],user:route.params.user,email:route.params.email, title:"", description:"", not_created:true});
       });
     }
     const  _renderArrow = (direction) => {
       if(direction === 'left') {
-          return <Icon name="arrow-with-circle-left" size={30} color={(route.params.theme_color == 0) ? '#fff'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white' }/>
+          return <Icon name="arrow-with-circle-left" size={30} color={(theme_color == 0) ? '#fff'  : (theme_color == 1) ? 'gainsboro' : 'white' }/>
       } else {
-          return <Icon name="arrow-with-circle-right" size={30} color={(route.params.theme_color == 0) ? '#fff'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white' }/>
+          return <Icon name="arrow-with-circle-right" size={30} color={(theme_color == 0) ? '#fff'  : (theme_color == 1) ? 'gainsboro' : 'white' }/>
       }
   }
 
@@ -259,8 +430,8 @@ const onLocation = (location) => {
       paddingTop: 15,
       height: "100%",
       width: "100%",
-      backgroundColor: date.dateString === moment().format('YYYY-MM-DD') ? ((route.params.theme_color == 0) ? '#CCCCCC'  : (route.params.theme_color == 1) ? '#8c8c8c' : 'white') : ((route.params.theme_color == 0) ? 'transparent'  : (route.params.theme_color == 1) ? '#404040' : 'mistyrose'),
-      color:  date.dateString == moment().format('YYYY-MM-DD') ?  ((route.params.theme_color == 0) ? 'snow'  : (route.params.theme_color == 1) ? 'black' : '#404040')   :      date.month !== currentDate.month() + 1 ? 'gray' :  moment(date.dateString).days() === 0 ? 'red' : moment(date.dateString).days() === 6 ? 'blue' : ((route.params.theme_color == 0) ? '#292929'  : (route.params.theme_color == 1) ? 'gainsboro' : '#505050'),
+      backgroundColor: date.dateString === moment().format('YYYY-MM-DD') ? ((theme_color == 0) ? '#CCCCCC'  : (theme_color == 1) ? '#8c8c8c' : 'white') : ((theme_color == 0) ? 'transparent'  : (theme_color == 1) ? '#404040' : 'mistyrose'),
+      color:  date.dateString == moment().format('YYYY-MM-DD') ?  ((theme_color == 0) ? 'snow'  : (theme_color == 1) ? 'black' : '#404040')   :      date.month !== currentDate.month() + 1 ? 'gray' :  moment(date.dateString).days() === 0 ? 'red' : moment(date.dateString).days() === 6 ? 'blue' : ((theme_color == 0) ? '#292929'  : (theme_color == 1) ? 'gainsboro' : '#505050'),
     },
   });
 
@@ -270,17 +441,17 @@ container: {
   flex: 1,
   justifyContent: 'center',
   alignItems: 'center',
-  backgroundColor:((route.params.theme_color == 0) ? 'snow'  : (route.params.theme_color == 1) ? '#292929' : 'mistyrose'),
+  backgroundColor:((theme_color == 0) ? 'snow'  : (theme_color == 1) ? '#292929' : 'mistyrose'),
 },
 calendar: {
   fontfamily:"TrebuchetMS-Bold",
   width: 370,
   height: 480,
   borderWidth: 3,
-  borderColor: ((route.params.theme_color == 2) ? 'mistyrose': 'gray'),
+  borderColor: ((theme_color == 2) ? 'mistyrose': 'gray'),
   borderRadius: 10,
   bottom:50,
-  backgroundColor: ((route.params.theme_color == 0) ? 'snow'  : (route.params.theme_color == 1) ? '#404040' : 'lightpink'),
+  backgroundColor: ((theme_color == 0) ? 'snow'  : (theme_color == 1) ? '#404040' : 'lightpink'),
 
 },
 header: {
@@ -290,76 +461,38 @@ header: {
 icon1:{
   position: 'absolute',
   top:"73%",
-  color:((route.params.theme_color == 0) ? 'black'  : (route.params.theme_color == 1) ? 'ivory' : 'black'),
+  color:((theme_color == 0) ? 'black'  : (theme_color == 1) ? 'ivory' : 'black'),
 },
 icon2:{
   position: 'absolute',
   left: 2,
   top:"73%",
-  color:((route.params.theme_color == 0) ? 'black'  : (route.params.theme_color == 1) ? 'ivory' : 'black'),
-}
+  color:((theme_color == 0) ? 'black'  : (theme_color == 1) ? 'ivory' : 'black'),
+},
+header_: {
+  // override the default header style react-native-calendars/src/calendar/header/style.js
+  backgroundColor: (theme_color == 0) ? 'gray'  : (theme_color == 1) ? '#404040' : 'lightpink', // カレンダーのヘッダーの背景色
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  paddingVertical: 15,
+  width: 366,
+  right: 6,
+  borderTopLeftRadius: 8,
+  borderTopRightRadius: 8,
+},
+
 });
 
-theme = {
-  'stylesheet.calendar.header': {
-      header: {
-        // override the default header style react-native-calendars/src/calendar/header/style.js
-        backgroundColor: (route.params.theme_color == 0) ? 'gray'  : (route.params.theme_color == 1) ? '#404040' : 'lightpink', // カレンダーのヘッダーの背景色
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 15,
-        width: 366,
-        right: 6,
-        borderTopLeftRadius: 8,
-        borderTopRightRadius: 8,
-      },
-      monthText: {
-        color: (route.params.theme_color == 0) ? 'white'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white', // カレンダーのヘッダーの文字色
-        fontWeight: '700',
-        fontSize: 20,
-        fontFamily:"TrebuchetMS-Bold",
-      },
-      dayHeader: {
-        marginTop: 13,
-        // marginBottom: 7,
-        // width: 30,
-        textAlign: 'center',
-        fontSize: 18,
-        bottom: 10,
-        color:  ((route.params.theme_color == 0) ? 'gray'  : (route.params.theme_color == 1) ? 'gainsboro' : 'white'), // 曜日の文字色
-        fontFamily:"TrebuchetMS-Bold",
-      },
-    },
-    'stylesheet.calendar.main': {
-      monthView: {
-        flex: 1,
-        height: '100%',
-        justifyContent: 'space-around',
-        fontfamily:"TrebuchetMS-Bold",
-      },
-      week: {
-        flex: 1,
-        marginVertical: 0,
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        fontfamily:"TrebuchetMS-Bold",
-      },
-      dayContainer: {
-        borderColor: '#f5f5f5', // 日付の枠線の色
-        borderWidth: 1,
-        // backgroundColor: 'pink',
-        flex:1,
-        fontfamily:"TrebuchetMS-Bold",
-      },
-    },
-  }
+
 
         
     return(
     <View style={styles.container}>
       {console.log(navigation)}
         <Calendar
+        key={key}
+        theme={theme}
         monthFormat={"yyyy年 MM月"}
         current={INITIAL_DATE}
         renderArrow={_renderArrow}
@@ -373,8 +506,7 @@ theme = {
         }}
         onMonthChange={(month) => {
           loadDayData(month.dateString.slice(0,8))
-        }}
-        theme={theme}
+        }} 
         style={styles.calendar}
         onDayPress={handleDayPress}
         dayComponent={({ date }) => {

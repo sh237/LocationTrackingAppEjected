@@ -4,9 +4,11 @@ import {OnLocationContext} from '../navigation/DrawerNavigation'
 import BackgroundGeolocation from "react-native-background-geolocation";
 import CheckBox from '@react-native-community/checkbox';
 import axios from 'axios';
+import { ThemeColorContext } from '../navigation/index';
 
 const TrackingSettingsDisplay = ({navigation,route}) => {
   //axios.put(`/auth/update/${id}`,{id:id}).then(response => {
+    const {theme_color, setThemeColor} = useContext(ThemeColorContext);
   const [start, setStart] = useState(null);
   const [stop, setStop] = useState(null);
   const [isEnabled, setIsEnabled] = useState(false);
@@ -70,7 +72,7 @@ const TrackingSettingsDisplay = ({navigation,route}) => {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      backgroundColor: (route.params.theme_color == 0) ? '#fff'  : (route.params.theme_color == 1) ? '#292929' : 'mistyrose', 
+      backgroundColor: (theme_color == 0) ? '#fff'  : (theme_color == 1) ? '#292929' : 'mistyrose', 
     }
   });
   
@@ -78,7 +80,7 @@ const TrackingSettingsDisplay = ({navigation,route}) => {
   return (
     <View style={styles.screen}>
       <View style={{flexDirection:"row",justifyContent:"space-between",}}>
-        <Text style={{color: ((route.params.theme_color == 0) ? 'black'  : (route.params.theme_color == 1) ? 'white' : '#404040') , top:"1%",fontSize:20,fontFamily:'TrebuchetMS-Bold'} }>位置情報追跡オフ/オン：</Text>
+        <Text style={{color: ((theme_color == 0) ? 'black'  : (theme_color == 1) ? 'white' : '#404040') , top:"1%",fontSize:20,fontFamily:'TrebuchetMS-Bold'} }>位置情報追跡オフ/オン：</Text>
           <Switch
             trackColor={{ false: "#767577", true: "black" }}
             thumbColor={isEnabled ? "#f5dd4b" : "#f4f3f4"}

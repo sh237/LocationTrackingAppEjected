@@ -1,6 +1,6 @@
 # LocationTrackingAppEjected
 
-"LocationTrackingAppEjected" n application that displays and records daily route information and photos on a map by reading location information
+"LocationTrackingAppEjected" is an application that displays and records daily route information and photos on a map by reading location information
 
 # DEMO
 

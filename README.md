@@ -76,8 +76,6 @@ I have not tested it on android.
 
 # License
 
-"Physics_Sim_Py" is under [MIT license](https://en.wikipedia.org/wiki/MIT_License).
-
-Enjoy making cute physics simulations!
+"LocationTrackingAppEjected" is under [MIT license].
 
 Thank you!

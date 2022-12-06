@@ -73,6 +73,7 @@ I have not tested it on android.
 
 * Shunya Nagashima
 * Twitter : -
+* Email : syun864297531@gmail.com
 
 # License
 
